@@ -1,6 +1,7 @@
 package domain
 
 type Client struct {
+	id          string
 	firstName   string
 	fathersName string //optional
 	phoneNumber string

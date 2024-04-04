@@ -1,6 +1,7 @@
 package domain
 
 type Admin struct {
+	id          string
 	firstName   string
 	fathersName string
 	username    string
