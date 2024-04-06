@@ -25,11 +25,11 @@ type Client struct {
 	rating      float32
 }
 
-func (adp Adapter) GetClient(id string) (domain.Client, error) {
+func (adp Adapter) GetClient(id string) (*domain.Client, error) {
 	var clientEntity Client
 	clt := adp.db.First(&clientEntity, id)
 
-	client := domain.Client{
+	client := &domain.Client{
 		Id:          clientEntity.id,
 		FirstName:   clientEntity.firstName,
 		FathersName: clientEntity.fathersName,
@@ -40,4 +40,24 @@ func (adp Adapter) GetClient(id string) (domain.Client, error) {
 		Rating:      clientEntity.rating,
 	}
 	return client, clt.Error
+}
+
+func (adp Adapter) CreateClient(clt Client) (*domain.Client, error) {
+	res := adp.db.Create(&clt)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return &domain.Client{
+		Id:          clt.id,
+		FirstName:   clt.firstName,
+		FathersName: clt.fathersName,
+		PhoneNumber: clt.phoneNumber,
+		Email:       clt.email,
+		Photo:       clt.photo,
+		Role:        domain.Role(clt.role),
+		Rating:      clt.rating,
+	}, nil
+
 }
