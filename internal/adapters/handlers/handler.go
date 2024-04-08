@@ -7,3 +7,9 @@ import (
 type Adapter struct {
 	ser api_ports.APIPort
 }
+
+func NewHandler(ser api_ports.APIPort) *Adapter {
+	return &Adapter{
+		ser: ser,
+	}
+}

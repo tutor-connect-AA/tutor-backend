@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,10 +17,10 @@ func NewAdapter(dsn string) (*Adapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	// err = db.AutoMigrate(&Order{}, OrderItem{})
-	// if err != nil {
-	// 	return nil, fmt.Errorf("db migration error: %v", err)
-	// }
+	err = db.AutoMigrate(&client_table{})
+	if err != nil {
+		return nil, fmt.Errorf("db migration error: %v", err)
+	}
 
 	return &Adapter{db: db}, nil
 }

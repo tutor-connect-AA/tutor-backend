@@ -5,6 +5,6 @@ import (
 )
 
 type DBPort interface {
-	CreateClientPort(domain.Client) (*domain.Client, error)
 	GetClientByIdPort(id string) (*domain.Client, error)
+	CreateClientPort(clt domain.Client) (*domain.Client, error)
 }
