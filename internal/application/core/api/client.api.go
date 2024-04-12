@@ -20,12 +20,20 @@ func (app Application) RegisterClient(usr domain.Client) (*domain.Client, error)
 	return client, nil
 }
 
-func (app Application) GetClient(id string) (*domain.Client, error) {
-	client, err := app.db.GetClientByIdPort(id)
+func (app Application) GetListOfClients() ([]*domain.Client, error) {
+	clt, err := app.db.GetClientsPort()
 
 	if err != nil {
 		return nil, err
 	}
+	return clt, nil
+}
 
-	return client, nil
+func (app Application) UpdateClientProfile(updatedClt domain.Client) error {
+	err := app.db.UpdateClientPort(updatedClt)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
