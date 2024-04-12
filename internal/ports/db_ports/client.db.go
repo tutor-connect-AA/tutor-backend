@@ -7,4 +7,6 @@ import (
 type DBPort interface {
 	GetClientByIdPort(id string) (*domain.Client, error)
 	CreateClientPort(clt domain.Client) (*domain.Client, error)
+	GetClientsPort() ([]*domain.Client, error)
+	UpdateClientPort(updatedFieldsObj domain.Client) error
 }

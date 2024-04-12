@@ -18,7 +18,7 @@ type client_table struct {
 	gorm.Model
 	Id           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	First_Name   string    `gorm :"not null"`
-	Fathers_Name string    `gorm :"not null"` //optional
+	Fathers_Name string    //optional
 	Phone_Number string    `gorm :"not null"`
 	Email        string    `gorm:"unique; not null"`
 	Username     string    `gorm:"unique; not null"`
@@ -77,4 +77,26 @@ func (adp Adapter) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 	// 	Rating:      clt.rating,
 	// }, nil
 
+}
+
+func (adp Adapter) GetClientsPort() ([]*domain.Client, error) {
+	var clientEntity []*domain.Client
+
+	res := adp.db.Find(clientEntity)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return clientEntity, nil
+}
+
+func (adp Adapter) UpdateClientPort(updatedFieldsObj domain.Client) error {
+	res := adp.db.Save(updatedFieldsObj)
+
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
 }
