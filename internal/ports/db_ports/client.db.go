@@ -9,4 +9,5 @@ type DBPort interface {
 	CreateClientPort(clt domain.Client) (*domain.Client, error)
 	GetClientsPort() ([]*domain.Client, error)
 	UpdateClientPort(updatedFieldsObj domain.Client) error
+	GetClientByUsername(username string) (*domain.Client, error)
 }

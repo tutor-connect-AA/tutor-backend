@@ -31,6 +31,7 @@ func main() {
 	mux.HandleFunc("/client/listClients", handlers.GetListOfClients)
 	mux.HandleFunc("/client/single", handlers.GetClientById) //make path make sense
 	mux.HandleFunc("/client/update", handlers.UpdateClientProfile)
+	mux.HandleFunc("/client/login", handlers.LoginClient)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
