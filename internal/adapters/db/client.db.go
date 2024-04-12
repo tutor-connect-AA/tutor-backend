@@ -30,7 +30,8 @@ type client_table struct {
 
 func (adp Adapter) GetClientByIdPort(id string) (*domain.Client, error) {
 	var clientEntity client_table
-	clt := adp.db.First(&clientEntity, id)
+	clt := adp.db.Where("id = ?", id).First(&clientEntity)
+	// clt := adp.db.First(&clientEntity, id)
 
 	client := &domain.Client{
 		// Id:          clientEntity.Id, how to convert the uuid to string?????
@@ -80,19 +81,49 @@ func (adp Adapter) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 }
 
 func (adp Adapter) GetClientsPort() ([]*domain.Client, error) {
-	var clientEntity []*domain.Client
+	var clients []*client_table
 
-	res := adp.db.Find(clientEntity)
+	res := adp.db.Find(&clients)
 
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	return clientEntity, nil
+	var clientsReturn []*domain.Client
+
+	for _, client := range clients {
+		cltDomain := &domain.Client{
+			// Id: client.Id, how to convert to string
+			FirstName:   client.First_Name,
+			FathersName: client.Fathers_Name,
+			PhoneNumber: client.Phone_Number,
+			Email:       client.Email,
+			Username:    client.Username,
+			Password:    client.Password,
+			Photo:       client.Photo,
+			Role:        domain.Role(client.Role),
+			Rating:      client.Rating,
+		}
+		clientsReturn = append(clientsReturn, cltDomain)
+	}
+
+	return clientsReturn, nil
 }
 
 func (adp Adapter) UpdateClientPort(updatedFieldsObj domain.Client) error {
-	res := adp.db.Save(updatedFieldsObj)
+	updtClt := &client_table{
+		First_Name:   updatedFieldsObj.FirstName,
+		Fathers_Name: updatedFieldsObj.FathersName,
+		Phone_Number: updatedFieldsObj.PhoneNumber,
+		Email:        updatedFieldsObj.Email,
+		Username:     updatedFieldsObj.Username,
+		Password:     updatedFieldsObj.Password,
+		Photo:        updatedFieldsObj.Photo,
+		Role:         Role(updatedFieldsObj.Role),
+		Rating:       updatedFieldsObj.Rating,
+	}
+	// fmt.Println(updatedFieldsObj.Id)
+	res := adp.db.Model(&client_table{}).Where("id=?", updatedFieldsObj.Id).Updates(updtClt)
 
 	if res.Error != nil {
 		return res.Error
