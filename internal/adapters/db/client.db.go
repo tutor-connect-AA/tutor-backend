@@ -17,12 +17,12 @@ const (
 type client_table struct {
 	gorm.Model
 	Id           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	First_Name   string    `gorm :"not null"`
+	First_Name   string    //`gorm :"not null"`
 	Fathers_Name string    //optional
-	Phone_Number string    `gorm :"not null"`
+	Phone_Number string    //`gorm :"not null"`
 	Email        string    `gorm:"unique; not null"`
 	Username     string    `gorm:"unique; not null"`
-	Password     string    `gorm :"not null"`
+	Password     string    //`gorm :"not null"`
 	Photo        string
 	Role         Role    `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
 	Rating       float32 `gorm:"column:rating;check:rating >= 0 AND rating <= 5"`
@@ -130,4 +130,21 @@ func (adp Adapter) UpdateClientPort(updatedFieldsObj domain.Client) error {
 	}
 
 	return nil
+}
+
+func (adp Adapter) GetClientByUsername(username string) (*domain.Client, error) {
+	var clientEntity *client_table
+
+	clt := adp.db.Where("username = ?", username).First(&clientEntity)
+	client := &domain.Client{
+		// Id:          clientEntity.Id, how to convert the uuid to string?????
+		FirstName:   clientEntity.First_Name,
+		FathersName: clientEntity.Fathers_Name,
+		PhoneNumber: clientEntity.Phone_Number,
+		Email:       clientEntity.Email,
+		Photo:       clientEntity.Photo,
+		Role:        domain.Role(clientEntity.Role),
+		Rating:      clientEntity.Rating,
+	}
+	return client, clt.Error
 }

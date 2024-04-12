@@ -37,3 +37,16 @@ func (app Application) UpdateClientProfile(updatedClt domain.Client) error {
 	}
 	return nil
 }
+
+func (app Application) LoginClient(username, password string) (bool, error) {
+	clt, err := app.db.GetClientByUsername(username)
+
+	if err != nil {
+		return false, err
+	}
+
+	if clt.Password != password {
+		return false, err
+	}
+	return true, nil
+}
