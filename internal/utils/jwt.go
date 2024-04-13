@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -13,9 +14,13 @@ func Tokenize(payload string) (string, error) {
 	if err != nil {
 		return "", nil
 	}
+
+	expiration := time.Now().Add(time.Hour * 1)
+
 	t := jwt.NewWithClaims(jwt.SigningMethodES256,
 		jwt.MapClaims{
 			"name": payload,
+			"exp":  expiration.Unix(),
 		})
 	s, err := t.SignedString(key)
 	if err != nil {
@@ -36,6 +41,17 @@ func VerifyToken(tokenString string) error {
 
 	if !token.Valid {
 		return fmt.Errorf("invalid token")
+	}
+
+	//check expiration validation below
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if exp, ok := claims["exp"]; ok {
+			expiryTime := time.Unix(exp.(int64), 0)
+			if expiryTime.Before(time.Now()) {
+				return fmt.Errorf("token expired")
+			}
+		}
 	}
 
 	return nil
