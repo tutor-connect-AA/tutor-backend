@@ -1,6 +1,9 @@
 package api
 
-import "github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
+import (
+	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
+	"github.com/tutor-connect-AA/tutor-backend/internal/utils"
+)
 
 func (app Application) GetClientById(id string) (*domain.Client, error) {
 	client, err := app.db.GetClientByIdPort(id)
@@ -12,6 +15,11 @@ func (app Application) GetClientById(id string) (*domain.Client, error) {
 }
 
 func (app Application) RegisterClient(usr domain.Client) (*domain.Client, error) {
+	hashedPass, err := utils.HashPass(usr.Password)
+	if err != nil {
+		return nil, err
+	}
+	usr.Password = hashedPass
 	client, err := app.db.CreateClientPort(usr)
 	if err != nil {
 		return nil, err
@@ -38,15 +46,23 @@ func (app Application) UpdateClientProfile(updatedClt domain.Client) error {
 	return nil
 }
 
-func (app Application) LoginClient(username, password string) (bool, error) {
+func (app Application) LoginClient(username, password string) (string, error) {
 	clt, err := app.db.GetClientByUsername(username)
 
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
-	if clt.Password != password {
-		return false, err
+	//Handle different login errors differently
+
+	err = utils.CheckPass(clt.Password, password)
+	if err != nil {
+		return "", err
 	}
-	return true, nil
+	jwtToken, err := utils.Tokenize(clt.Username)
+
+	if err != nil {
+		return "", err
+	}
+	return jwtToken, nil
 }

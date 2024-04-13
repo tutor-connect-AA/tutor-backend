@@ -121,12 +121,13 @@ func (adp Adapter) LoginClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = adp.ser.LoginClient(loginData.Username, loginData.Password)
+	token, err := adp.ser.LoginClient(loginData.Username, loginData.Password)
 
 	if err != nil {
+		fmt.Println(err)
 		fmt.Fprintf(w, "Could not login")
 		return
 	}
 
-	fmt.Fprintf(w, "Successfully logged in")
+	fmt.Fprintf(w, "Successfully logged in with token : %v", token)
 }
