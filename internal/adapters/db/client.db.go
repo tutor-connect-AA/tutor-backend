@@ -141,6 +141,8 @@ func (adp Adapter) GetClientByUsername(username string) (*domain.Client, error) 
 		FirstName:   clientEntity.First_Name,
 		FathersName: clientEntity.Fathers_Name,
 		PhoneNumber: clientEntity.Phone_Number,
+		Username:    clientEntity.Username,
+		Password:    clientEntity.Password,
 		Email:       clientEntity.Email,
 		Photo:       clientEntity.Photo,
 		Role:        domain.Role(clientEntity.Role),

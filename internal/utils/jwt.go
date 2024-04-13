@@ -1,0 +1,58 @@
+package utils
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+var key, err = GenerateKey() //handle this better
+
+func Tokenize(payload string) (string, error) {
+
+	if err != nil {
+		return "", nil
+	}
+
+	expiration := time.Now().Add(time.Hour * 1)
+
+	t := jwt.NewWithClaims(jwt.SigningMethodES256,
+		jwt.MapClaims{
+			"name": payload,
+			"exp":  expiration.Unix(),
+		})
+	s, err := t.SignedString(key)
+	if err != nil {
+		return "", err
+	}
+	return s, nil
+}
+
+// look deeper into jwt token verification options for better security
+func VerifyToken(tokenString string) error {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+
+	//check expiration validation below
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if exp, ok := claims["exp"]; ok {
+			expiryTime := time.Unix(exp.(int64), 0)
+			if expiryTime.Before(time.Now()) {
+				return fmt.Errorf("token expired")
+			}
+		}
+	}
+
+	return nil
+}

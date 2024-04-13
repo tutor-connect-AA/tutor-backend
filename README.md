@@ -17,3 +17,4 @@ ________________________________________________________________________________
 - [ ] Use OAuth login as alternative
 - [ ] Hash Password
 - [ ] Handle different types of login errors differently with custom error model
+- [ ] look deeper into jwt token verification options for better security
