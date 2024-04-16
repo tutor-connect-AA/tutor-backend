@@ -8,6 +8,7 @@ import (
 )
 
 var key, err = GenerateKey() //handle this better
+// var key = []byte("secret-key")
 
 func Tokenize(payload string) (string, error) {
 
@@ -15,7 +16,9 @@ func Tokenize(payload string) (string, error) {
 		return "", nil
 	}
 
-	expiration := time.Now().Add(time.Hour * 1)
+	// fmt.Println("Tokenizing key is :", key)
+
+	expiration := time.Now().Add(time.Second * 30)
 
 	t := jwt.NewWithClaims(jwt.SigningMethodES256,
 		jwt.MapClaims{
@@ -24,6 +27,7 @@ func Tokenize(payload string) (string, error) {
 		})
 	s, err := t.SignedString(key)
 	if err != nil {
+		fmt.Print("err1", err)
 		return "", err
 	}
 	return s, nil
@@ -31,27 +35,24 @@ func Tokenize(payload string) (string, error) {
 
 // look deeper into jwt token verification options for better security
 func VerifyToken(tokenString string) error {
+	// token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	// 	return key, nil
+	// })
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return key, nil
+		// Check signing method
+		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		// Extract public key from token
+		return &key.PublicKey, nil
 	})
-
+	// fmt.Println("Verifying key is :", key)
 	if err != nil {
 		return err
 	}
 
 	if !token.Valid {
 		return fmt.Errorf("invalid token")
-	}
-
-	//check expiration validation below
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		if exp, ok := claims["exp"]; ok {
-			expiryTime := time.Unix(exp.(int64), 0)
-			if expiryTime.Before(time.Now()) {
-				return fmt.Errorf("token expired")
-			}
-		}
 	}
 
 	return nil
