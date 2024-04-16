@@ -129,5 +129,7 @@ func (adp Adapter) LoginClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Successfully logged in with token : %v", token)
+	w.Header().Set("Authorization", "Bearer "+token)
+
+	fmt.Fprintf(w, "Successfully logged in.: %v", token)
 }
