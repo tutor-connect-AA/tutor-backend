@@ -6,6 +6,7 @@ import (
 
 	"net/http"
 
+	"github.com/justinas/alice"
 	"github.com/tutor-connect-AA/tutor-backend/internal/adapters/db"
 	"github.com/tutor-connect-AA/tutor-backend/internal/adapters/handlers"
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/api"
@@ -27,10 +28,12 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	midChain := alice.New(AuthMiddleware)
+
 	mux.HandleFunc("/client/register", handlers.Register)
 	mux.HandleFunc("/client/listClients", handlers.GetListOfClients)
 	mux.HandleFunc("/client/single", handlers.GetClientById) //make path make sense
-	mux.HandleFunc("/client/update", handlers.UpdateClientProfile)
+	mux.Handle("/client/update", midChain.ThenFunc(handlers.UpdateClientProfile))
 	mux.HandleFunc("/client/login", handlers.LoginClient)
 
 	log.Println("Listening on port 8080")
