@@ -10,7 +10,7 @@ import (
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
-		fmt.Println(token)
+		// fmt.Println(token)
 		if token == "" {
 			w.WriteHeader(http.StatusUnauthorized)
 			fmt.Fprint(w, "Missing authorization header")
@@ -21,9 +21,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		if err != nil {
 			http.Error(w, "Not authorized", http.StatusUnauthorized)
-			fmt.Print(err)
-			// fmt.Printf(token)
-			fmt.Fprintf(w, "Invalid token")
+			fmt.Print("Invalid token")
 			return
 		}
 		fmt.Fprintf(w, "You are authorized")
