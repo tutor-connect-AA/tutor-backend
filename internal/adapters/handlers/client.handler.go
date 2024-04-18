@@ -4,22 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"strconv"
 
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
+	"github.com/tutor-connect-AA/tutor-backend/internal/utils"
 )
 
 type Client struct {
-	Id          string      `json:"id"`
-	FirstName   string      `json:"firstName"`
-	FathersName string      `json:"fathersName,omitempty"` //optional
-	PhoneNumber string      `json:"phoneNumber"`
-	Email       string      `json:"email"`
-	Username    string      `json:"username"`
-	Password    string      `json:"password"`
-	Photo       string      `json:"photo"`
-	Role        domain.Role `json:"role"` // should role even exist?
-	Rating      float32     `json:"rating"`
+	Id          string      `form:"id"`
+	FirstName   string      `form:"firstName"`
+	FathersName string      `form:"fathersName,omitempty"` //optional
+	PhoneNumber string      `form:"phoneNumber"`
+	Email       string      `form:"email"`
+	Username    string      `form:"username"`
+	Password    string      `form:"password"`
+	Photo       string      `form:"photo"`
+	Role        domain.Role `form:"role"` // should role even exist?
+	Rating      float32     `form:"rating"`
 }
 
 func (adp Adapter) Register(w http.ResponseWriter, r *http.Request) {
@@ -28,14 +31,50 @@ func (adp Adapter) Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
 		return
 	}
-	var newClient domain.Client
-	err := json.NewDecoder(r.Body).Decode(&newClient)
 
+	var newClient domain.Client
+	contentType := r.Header.Get("Content-Type")
+
+	if contentType == "application/json" {
+		err := json.NewDecoder(r.Body).Decode(&newClient)
+
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "Could not decode json", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max size
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Could not decode json", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	rating, err := strconv.ParseFloat(r.PostForm.Get("rating"), 64)
+	if err != nil {
+		fmt.Print(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	fileName := r.Context().Value("filePath")
+	file := r.Context().Value("file")
+	imageUrl, err := utils.UploadToCloudinary(file.(multipart.File), fileName.(string))
+	if err != nil {
+		http.Error(w, "Could not upload image to Cloudinary", http.StatusInternalServerError)
+		return
+	}
+	newClient = domain.Client{
+		FirstName:   r.PostForm.Get("firstName"),
+		FathersName: r.PostForm.Get("fathersName"),
+		PhoneNumber: r.PostForm.Get("phoneNumber"),
+		Email:       r.PostForm.Get("email"),
+		Username:    r.PostForm.Get("username"),
+		Password:    r.PostForm.Get("password"),
+		Photo:       imageUrl,
+		Role:        domain.Role(r.PostForm.Get("role")),
+		Rating:      float32(rating),
+	}
+	// fmt.Print(newClient)
 	clt, err := adp.ser.RegisterClient(newClient)
 
 	if err != nil {
