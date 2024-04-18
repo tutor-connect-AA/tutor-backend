@@ -18,7 +18,7 @@ func Tokenize(payload string) (string, error) {
 
 	// fmt.Println("Tokenizing key is :", key)
 
-	expiration := time.Now().Add(time.Second * 30)
+	expiration := time.Now().Add(time.Hour * 24)
 
 	t := jwt.NewWithClaims(jwt.SigningMethodES256,
 		jwt.MapClaims{
