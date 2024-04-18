@@ -28,12 +28,14 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	midChain := alice.New(AuthMiddleware)
+	protected := alice.New(AuthMiddleware)
 
-	mux.HandleFunc("/client/register", handlers.Register)
+	fileUpload := alice.New(FileUploadMiddleware)
+
+	mux.Handle("/client/register", fileUpload.ThenFunc(handlers.Register))
 	mux.HandleFunc("/client/listClients", handlers.GetListOfClients)
 	mux.HandleFunc("/client/single", handlers.GetClientById) //make path make sense
-	mux.Handle("/client/update", midChain.ThenFunc(handlers.UpdateClientProfile))
+	mux.Handle("/client/update", protected.ThenFunc(handlers.UpdateClientProfile))
 	mux.HandleFunc("/client/login", handlers.LoginClient)
 
 	log.Println("Listening on port 8080")
