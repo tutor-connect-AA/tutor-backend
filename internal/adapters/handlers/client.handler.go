@@ -9,8 +9,19 @@ import (
 	"strconv"
 
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
+	"github.com/tutor-connect-AA/tutor-backend/internal/ports/api_ports"
 	"github.com/tutor-connect-AA/tutor-backend/internal/utils"
 )
+
+type ClientAdapter struct {
+	ser api_ports.ClientAPIPort
+}
+
+func NewClientHandler(ser api_ports.ClientAPIPort) *ClientAdapter {
+	return &ClientAdapter{
+		ser: ser,
+	}
+}
 
 type Client struct {
 	Id          string      `form:"id"`
@@ -25,7 +36,7 @@ type Client struct {
 	Rating      float32     `form:"rating"`
 }
 
-func (adp Adapter) Register(w http.ResponseWriter, r *http.Request) {
+func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
@@ -90,7 +101,7 @@ type GetClientIdReq struct {
 	Id string `json:"id"`
 }
 
-func (adp Adapter) GetClientById(w http.ResponseWriter, r *http.Request) {
+func (adp ClientAdapter) GetClientById(w http.ResponseWriter, r *http.Request) {
 
 	id := r.URL.Query().Get("id")
 	fmt.Printf("type of id is %T", id)
@@ -103,7 +114,7 @@ func (adp Adapter) GetClientById(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Successfully got user %v", clt)
 }
 
-func (adp Adapter) GetListOfClients(w http.ResponseWriter, r *http.Request) {
+func (adp ClientAdapter) GetListOfClients(w http.ResponseWriter, r *http.Request) {
 
 	clts, err := adp.ser.GetListOfClients()
 
@@ -119,7 +130,7 @@ func (adp Adapter) GetListOfClients(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (adp Adapter) UpdateClientProfile(w http.ResponseWriter, r *http.Request) {
+func (adp ClientAdapter) UpdateClientProfile(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPut {
 		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
@@ -148,7 +159,7 @@ type LoginReq struct {
 	Password string `json:"password"`
 }
 
-func (adp Adapter) LoginClient(w http.ResponseWriter, r *http.Request) {
+func (adp ClientAdapter) LoginClient(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
 		return

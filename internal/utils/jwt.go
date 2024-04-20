@@ -10,7 +10,7 @@ import (
 var key, err = GenerateKey() //handle this better
 // var key = []byte("secret-key")
 
-func Tokenize(payload string) (string, error) {
+func Tokenize(id string) (string, error) {
 
 	if err != nil {
 		return "", nil
@@ -22,8 +22,8 @@ func Tokenize(payload string) (string, error) {
 
 	t := jwt.NewWithClaims(jwt.SigningMethodES256,
 		jwt.MapClaims{
-			"name": payload,
-			"exp":  expiration.Unix(),
+			"id":  id,
+			"exp": expiration.Unix(),
 		})
 	s, err := t.SignedString(key)
 	if err != nil {
@@ -34,7 +34,7 @@ func Tokenize(payload string) (string, error) {
 }
 
 // look deeper into jwt token verification options for better security
-func VerifyToken(tokenString string) error {
+func VerifyToken(tokenString string) (map[string]interface{}, error) {
 	// token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 	// 	return key, nil
 	// })
@@ -48,12 +48,13 @@ func VerifyToken(tokenString string) error {
 	})
 	// fmt.Println("Verifying key is :", key)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("invalid token")
+		return nil, fmt.Errorf("invalid token")
 	}
-
-	return nil
+	claims := token.Claims.(jwt.MapClaims)
+	return claims, nil
+	// return nil
 }
