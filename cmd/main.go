@@ -15,16 +15,22 @@ import (
 func main() {
 
 	var dsn = flag.String("dsn", "postgres://postgres:Maverick2020!@localhost:5432/tutor-connect", "Connection string to database")
-	dbAdapter, err := db.NewAdapter(*dsn)
+	dbConnection, err := db.ConnectDB(*dsn)
 
 	if err != nil {
 		log.Fatal("Can't connect to database")
 		return
 	}
 
-	app := api.NewApplication(dbAdapter)
+	//Client configuration
+	clientRepo := db.NewClientRepo(dbConnection)
+	clientAPI := api.NewClientAPI(clientRepo)
+	clientHandler := handlers.NewClientHandler(clientAPI)
 
-	handlers := handlers.NewHandler(app)
+	//Job configuration
+	jobRepo := db.NewJobRepo(dbConnection)
+	jobAPI := api.NewJobAPI(jobRepo)
+	jobHandler := handlers.NewJobHandler(jobAPI)
 
 	mux := http.NewServeMux()
 
@@ -32,11 +38,13 @@ func main() {
 
 	fileUpload := alice.New(FileUploadMiddleware)
 
-	mux.Handle("/client/register", fileUpload.ThenFunc(handlers.Register))
-	mux.HandleFunc("/client/listClients", handlers.GetListOfClients)
-	mux.HandleFunc("/client/single", handlers.GetClientById) //make path make sense
-	mux.Handle("/client/update", protected.ThenFunc(handlers.UpdateClientProfile))
-	mux.HandleFunc("/client/login", handlers.LoginClient)
+	mux.Handle("/client/register", fileUpload.ThenFunc(clientHandler.Register))
+	mux.HandleFunc("/client/listClients", clientHandler.GetListOfClients)
+	mux.HandleFunc("/client/single", clientHandler.GetClientById) //make path make sense
+	mux.Handle("/client/update", protected.ThenFunc(clientHandler.UpdateClientProfile))
+	mux.HandleFunc("/client/login", clientHandler.LoginClient)
+
+	mux.Handle("/job/post", protected.ThenFunc(jobHandler.PostJob))
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)

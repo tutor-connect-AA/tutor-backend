@@ -14,7 +14,7 @@ import (
 7. Profile should be shown in detail based on id
 */
 
-type APIPort interface {
+type ClientAPIPort interface {
 	RegisterClient(usr domain.Client) (*domain.Client, error)
 	GetClientById(id string) (*domain.Client, error)
 	GetListOfClients() ([]*domain.Client, error)

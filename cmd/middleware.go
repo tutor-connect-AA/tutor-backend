@@ -17,7 +17,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		token = token[len("Bearer "):]
-		err := utils.VerifyToken(token)
+		_, err := utils.VerifyToken(token)
 
 		if err != nil {
 			http.Error(w, "Not authorized", http.StatusUnauthorized)

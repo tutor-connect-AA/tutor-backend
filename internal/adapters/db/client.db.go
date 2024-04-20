@@ -6,6 +6,16 @@ import (
 	"gorm.io/gorm"
 )
 
+type ClientRepo struct {
+	db *gorm.DB
+}
+
+func NewClientRepo(db *gorm.DB) *ClientRepo {
+	return &ClientRepo{
+		db: db,
+	}
+}
+
 type Role string
 
 const (
@@ -24,14 +34,15 @@ type client_table struct {
 	Username     string    `gorm:"unique; not null"`
 	Password     string    //`gorm :"not null"`
 	Photo        string
-	Role         Role    `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
-	Rating       float32 `gorm:"column:rating;check:rating >= 0 AND rating <= 5"`
+	Role         Role        `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
+	Rating       float32     `gorm:"column:rating;check:rating >= 0 AND rating <= 5"`
+	Jobs         []job_table `gorm:"foreignKey:Posted_By"` //check for additional necessary info
 }
 
-func (adp Adapter) GetClientByIdPort(id string) (*domain.Client, error) {
+func (cr ClientRepo) GetClientByIdPort(id string) (*domain.Client, error) {
 	var clientEntity client_table
-	clt := adp.db.Where("id = ?", id).First(&clientEntity)
-	// clt := adp.db.First(&clientEntity, id)
+	clt := cr.db.Where("id = ?", id).First(&clientEntity)
+	// clt := cr.db.First(&clientEntity, id)
 
 	client := &domain.Client{
 		// Id:          clientEntity.Id, how to convert the uuid to string?????
@@ -46,8 +57,8 @@ func (adp Adapter) GetClientByIdPort(id string) (*domain.Client, error) {
 	return client, clt.Error
 }
 
-// func (adp Adapter) CreateClientPort(clt Client) (*domain.Client, error)
-func (adp Adapter) CreateClientPort(clt domain.Client) (*domain.Client, error) {
+// func (cr ClientRepo) CreateClientPort(clt Client) (*domain.Client, error)
+func (cr ClientRepo) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 	newClient := &client_table{
 		First_Name:   clt.FirstName,
 		Fathers_Name: clt.FathersName,
@@ -59,7 +70,7 @@ func (adp Adapter) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 		Role:         Role(clt.Role),
 		Rating:       clt.Rating,
 	}
-	res := adp.db.Create(&newClient)
+	res := cr.db.Create(&newClient)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -80,10 +91,10 @@ func (adp Adapter) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 
 }
 
-func (adp Adapter) GetClientsPort() ([]*domain.Client, error) {
+func (cr ClientRepo) GetClientsPort() ([]*domain.Client, error) {
 	var clients []*client_table
 
-	res := adp.db.Find(&clients)
+	res := cr.db.Find(&clients)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -110,7 +121,7 @@ func (adp Adapter) GetClientsPort() ([]*domain.Client, error) {
 	return clientsReturn, nil
 }
 
-func (adp Adapter) UpdateClientPort(updatedFieldsObj domain.Client) error {
+func (cr ClientRepo) UpdateClientPort(updatedFieldsObj domain.Client) error {
 	updtClt := &client_table{
 		First_Name:   updatedFieldsObj.FirstName,
 		Fathers_Name: updatedFieldsObj.FathersName,
@@ -123,7 +134,7 @@ func (adp Adapter) UpdateClientPort(updatedFieldsObj domain.Client) error {
 		Rating:       updatedFieldsObj.Rating,
 	}
 	// fmt.Println(updatedFieldsObj.Id)
-	res := adp.db.Model(&client_table{}).Where("id=?", updatedFieldsObj.Id).Updates(updtClt)
+	res := cr.db.Model(&client_table{}).Where("id=?", updatedFieldsObj.Id).Updates(updtClt)
 
 	if res.Error != nil {
 		return res.Error
@@ -132,12 +143,12 @@ func (adp Adapter) UpdateClientPort(updatedFieldsObj domain.Client) error {
 	return nil
 }
 
-func (adp Adapter) GetClientByUsername(username string) (*domain.Client, error) {
+func (cr ClientRepo) GetClientByUsername(username string) (*domain.Client, error) {
 	var clientEntity *client_table
 
-	clt := adp.db.Where("username = ?", username).First(&clientEntity)
+	clt := cr.db.Where("username = ?", username).First(&clientEntity)
 	client := &domain.Client{
-		// Id:          clientEntity.Id, how to convert the uuid to string?????
+		Id:          clientEntity.Id.String(), //how to convert the uuid to string?????
 		FirstName:   clientEntity.First_Name,
 		FathersName: clientEntity.Fathers_Name,
 		PhoneNumber: clientEntity.Phone_Number,

@@ -7,20 +7,21 @@ import (
 	"gorm.io/gorm"
 )
 
-type Adapter struct {
-	db *gorm.DB
-}
+// type Adapter struct {
+// 	db *gorm.DB
+// }
 
-func NewAdapter(dsn string) (*Adapter, error) {
+func ConnectDB(dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
+		fmt.Printf("Error connecting to DB %v", err)
 		return nil, err
 	}
-	err = db.AutoMigrate(&client_table{})
+	err = db.AutoMigrate(&client_table{}, &job_table{})
 	if err != nil {
 		return nil, fmt.Errorf("db migration error: %v", err)
 	}
 
-	return &Adapter{db: db}, nil
+	return db, nil
 }
