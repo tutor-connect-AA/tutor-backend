@@ -45,6 +45,8 @@ func main() {
 	mux.HandleFunc("/client/login", clientHandler.LoginClient)
 
 	mux.Handle("/job/post", protected.ThenFunc(jobHandler.PostJob))
+	mux.HandleFunc("/job/single", jobHandler.GetJobById)
+	mux.HandleFunc("/job/all", jobHandler.GetJobs)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
