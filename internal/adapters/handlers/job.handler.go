@@ -26,6 +26,11 @@ type CreateJobReq struct {
 
 func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusUnauthorized)
+		return
+	}
+
 	err := r.ParseMultipartForm(10 << 20) // 10 MB max size
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -121,4 +126,34 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintf(w, "Created job : %v", jb)
+}
+
+func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
+	jobId := r.URL.Query().Get("id")
+
+	jb, err := adp.jobSer.GetJob(jobId)
+
+	if err != nil {
+		fmt.Printf("Error at get jobById handler %v", err)
+		http.Error(w, "Could not get a job by id", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "Got job successfully %v", jb)
+}
+
+func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
+	jbs, err := adp.jobSer.GetListOfJobs()
+
+	if err != nil {
+		fmt.Printf("Error at getting list of jobs %v", err)
+		http.Error(w, "Could not get a list of jobs", http.StatusInternalServerError)
+		return
+	}
+
+	for _, job := range jbs {
+		fmt.Fprintf(w, "%v\n", job)
+	}
+
+	// fmt.Fprintf(w, "Got list of jobs successfully %v", jbs)
+	fmt.Printf("Here are the list of jobs %v", jbs)
 }
