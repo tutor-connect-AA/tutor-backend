@@ -104,7 +104,7 @@ func (cr ClientRepo) GetClientsPort() ([]*domain.Client, error) {
 
 	for _, client := range clients {
 		cltDomain := &domain.Client{
-			// Id: client.Id, how to convert to string
+			Id:          client.Id.String(), //how to convert to string
 			FirstName:   client.First_Name,
 			FathersName: client.Fathers_Name,
 			PhoneNumber: client.Phone_Number,
