@@ -7,11 +7,11 @@ import (
 type ApplicationStatus string
 
 type JobApplication struct {
-	id          string
-	jobId       string //id of job
-	applicantId string //id of the applicant
-	coverLetter string // should this be a link to the file or the text itself
-	file        string //video, other documents
-	createdOn   time.Time
-	updatedOn   time.Time
+	Id          string
+	JobId       string //id of job
+	ApplicantId string //id of the applicant
+	CoverLetter string // should this be a link to the file or the text itself
+	File        string //video, other documents
+	CreatedOn   time.Time
+	UpdatedOn   time.Time
 }

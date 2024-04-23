@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type User struct {
+type Tutor struct {
 	Id                       string
 	FirstName                string
 	FathersName              string
