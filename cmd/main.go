@@ -32,6 +32,11 @@ func main() {
 	jobAPI := api.NewJobAPI(jobRepo)
 	jobHandler := handlers.NewJobHandler(jobAPI)
 
+	//tutor configuration
+	tutRepo := db.NewTutorRepo(dbConnection)
+	tutAPI := api.NewTutorAPI(tutRepo)
+	tutHandler := handlers.NewTutorHandler(tutAPI)
+
 	mux := http.NewServeMux()
 
 	protected := alice.New(AuthMiddleware)
@@ -47,6 +52,8 @@ func main() {
 	mux.Handle("/job/post", protected.ThenFunc(jobHandler.PostJob))
 	mux.HandleFunc("/job/single", jobHandler.GetJobById)
 	mux.HandleFunc("/job/all", jobHandler.GetJobs)
+
+	mux.Handle("/tutor/register", fileUpload.ThenFunc(tutHandler.RegisterTutor))
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
