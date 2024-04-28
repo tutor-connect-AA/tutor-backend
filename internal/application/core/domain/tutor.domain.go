@@ -12,13 +12,13 @@ type Tutor struct {
 	PhoneNumber              string
 	Gender                   Gender
 	Photo                    string
-	Rating                   int
+	Rating                   float32
 	Bio                      string
 	Username                 string
 	Password                 string
 	Role                     Role
 	CV                       string //link to file or blob?
-	HourlyRate               int
+	HourlyRate               float32
 	Region                   string
 	City                     string
 	Education                Education
@@ -27,8 +27,8 @@ type Tutor struct {
 	CurrentlyEnrolled        Education
 	ProofOfCurrentEnrollment string //link to file
 	GraduationDate           time.Time
-	PreferredSubjects        []string //should be an enum limited to 2
-	PreferredWorkLocation    string   // should this exist
+	PreferredSubjects        string //should be an enum limited to 2
+	PreferredWorkLocation    string // should this exist
 	CreatedOn                time.Time
 	UpdatedOn                time.Time
 }
