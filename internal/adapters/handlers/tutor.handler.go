@@ -41,7 +41,7 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gradDate, err := time.Parse("2006-01-02", r.PostForm.Get("deadline"))
+	gradDate, err := time.Parse("2006-01-02", r.PostForm.Get("graduationDate"))
 	if err != nil {
 		fmt.Printf("Could not parse deadline %v", err)
 		http.Error(w, "Invalid date", http.StatusInternalServerError)
@@ -55,17 +55,19 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 
 	photoPath := r.Context().Value("photoPath")
 	photo := r.Context().Value("photo")
-	photoURL, err := utils.UploadToCloudinary(photo.(multipart.File), photoPath.(string))
-	if err != nil {
-		http.Error(w, "Could not upload photo", http.StatusInternalServerError)
-		return
-	}
 
 	cvPath := r.Context().Value("cvPath")
 	cv := r.Context().Value("cv")
+
+	// // fmt.Printf("Photo %v and cv %v from header", photo, cv)
 	cvURL, err := utils.UploadToCloudinary(cv.(multipart.File), cvPath.(string))
 	if err != nil {
 		http.Error(w, "Could not upload cv", http.StatusInternalServerError)
+		return
+	}
+	photoURL, err := utils.UploadToCloudinary(photo.(multipart.File), photoPath.(string))
+	if err != nil {
+		http.Error(w, "Could not upload photo", http.StatusInternalServerError)
 		return
 	}
 
