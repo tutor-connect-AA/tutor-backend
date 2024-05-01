@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 )
 
@@ -9,8 +10,9 @@ func FileUploadMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		photo, photoHeader, err := r.FormFile("photo")
 		if err != nil {
-			http.Error(w, "Could not get photo file from request", http.StatusInternalServerError)
-			return
+			fmt.Printf("Could not get photo")
+			// http.Error(w, "Could not get photo file from request", http.StatusInternalServerError)
+			// return
 		}
 		defer photo.Close()
 		ctx := context.WithValue(r.Context(), "photoPath", photoHeader.Filename)
@@ -19,8 +21,9 @@ func FileUploadMiddleware(next http.Handler) http.Handler {
 
 		cv, cvHeader, err := r.FormFile("cv")
 		if err != nil {
-			http.Error(w, "Could not get tutor's cv", http.StatusInternalServerError)
-			return
+			fmt.Printf("Could not get tutor's cv")
+			// http.Error(w, "Could not get tutor's cv", http.StatusInternalServerError)
+			// return
 		}
 		defer cv.Close()
 		ctx = context.WithValue(ctx, "cvPath", cvHeader.Filename)
@@ -28,8 +31,9 @@ func FileUploadMiddleware(next http.Handler) http.Handler {
 
 		eduCred, eduCredPath, err := r.FormFile("eduCred")
 		if err != nil {
-			http.Error(w, "Could not get education credential file", http.StatusInternalServerError)
-			return
+			fmt.Printf("Could not get education credential")
+			// http.Error(w, "Could not get education credential file", http.StatusInternalServerError)
+			// return
 		}
 		defer eduCred.Close()
 		ctx = context.WithValue(ctx, "eduCredPath", eduCredPath.Filename)
