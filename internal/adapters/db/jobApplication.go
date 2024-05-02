@@ -8,10 +8,11 @@ import (
 
 type job_application_table struct {
 	gorm.Model
-	Id          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	JobId       string    `gorm:"not null;foreignKey:job_table(Id)"`
-	ApplicantId string    `gorm:"not null;foreignKey:tutor_table(Id)"`
-	CoverLetter string    `gorm:"type:text"` // Assuming text storage for cover letter
+	Id          uuid.UUID                `gorm:"type:uuid;default:uuid_generate_v4()"`
+	JobId       string                   `gorm:"not null;foreignKey:job_table(Id);primaryKey"`
+	ApplicantId string                   `gorm:"not null;foreignKey:tutor_table(Id)";primaryKey`
+	CoverLetter string                   `gorm:"type:text"` // Assuming text storage for cover letter
+	Status      domain.ApplicationStatus `gorm:"type:text"`
 	// Tutors      []*tutor_table `foreignKey:applicant_id"`
 	// File        string    `gorm:"type:text"` // Assuming text storage for other documents (link can also be used)
 
@@ -32,6 +33,7 @@ func (jar JobApplicationRepo) CreateApplicationRepo(apl domain.JobApplication) (
 		JobId:       apl.JobId,
 		ApplicantId: apl.ApplicantId,
 		CoverLetter: apl.CoverLetter,
+		Status:      domain.PENDING,
 		// File:        apl.File,
 	}
 
@@ -53,6 +55,7 @@ func (jar JobApplicationRepo) GetApplicationByIdRepo(id string) (*domain.JobAppl
 		JobId:       application.JobId,
 		ApplicantId: application.ApplicantId,
 		CoverLetter: application.CoverLetter,
+		Status:      application.Status,
 		// File:        application.File,
 	}, nil
 }
@@ -70,6 +73,7 @@ func (jar JobApplicationRepo) GetApplicationsByJobRepo(jId string) ([]*domain.Jo
 			JobId:       apl.JobId,
 			ApplicantId: apl.ApplicantId,
 			CoverLetter: apl.CoverLetter,
+			Status:      apl.Status,
 		}
 		applications = append(applications, &newApl)
 	}
@@ -92,6 +96,7 @@ func (jar JobApplicationRepo) GetApplicationsByTutorRepo(tId string) ([]*domain.
 			JobId:       apl.JobId,
 			ApplicantId: apl.ApplicantId,
 			CoverLetter: apl.CoverLetter,
+			Status:      apl.Status,
 		}
 		applications = append(applications, &newApl)
 	}
@@ -114,9 +119,19 @@ func (jar JobApplicationRepo) GetApplicationsByClientRepo(cltId string) ([]*doma
 			JobId:       apl.JobId,
 			ApplicantId: apl.ApplicantId,
 			CoverLetter: apl.CoverLetter,
+			Status:      apl.Status,
 		}
 		applications = append(applications, &newApl)
 	}
 
 	return applications, nil
+}
+
+func (jar JobApplicationRepo) UpdateApplicationStatusRepo(applicationId string, status domain.ApplicationStatus) error {
+	res := jar.db.Where("id = ?", applicationId).Update("status", status)
+
+	if res.Error != nil {
+		return res.Error
+	}
+	return nil
 }

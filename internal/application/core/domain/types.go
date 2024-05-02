@@ -6,6 +6,8 @@ type Role string
 
 type Education string
 
+type ApplicationStatus string
+
 const (
 	Male   Gender = "MALE"
 	Female Gender = "FEMALE"
@@ -22,4 +24,10 @@ const (
 	Bachelors   Education = "BACHELORS"
 	Masters     Education = "MASTERS"
 	Phd         Education = "PHD"
+)
+const (
+	PENDING     ApplicationStatus = "PENDING"
+	SHORTLISTED ApplicationStatus = "SHORTLISTED"
+	// INTERESTED  ApplicationStatus = "INTERESTED"
+	HIRED ApplicationStatus = "HIRED"
 )

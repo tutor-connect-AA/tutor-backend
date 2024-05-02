@@ -112,3 +112,13 @@ func (jaH *JobApplicationHandler) ApplicationsByClient(w http.ResponseWriter, r 
 	}
 
 }
+func (jaH *JobApplicationHandler) Hire(w http.ResponseWriter, r *http.Request) {
+	applicationId := r.URL.Query().Get("id")
+	err := jaH.jaSer.UpdateApplicationStatus(applicationId, domain.HIRED)
+
+	if err != nil {
+		http.Error(w, "Could not perform hiring operation", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprint(w, "Successfully updated status of job application to HIRED")
+}

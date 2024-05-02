@@ -55,3 +55,12 @@ func (js *JobApplicationAPI) GetApplicationsByClient(clientId string) ([]*domain
 	}
 	return apls, nil
 }
+
+func (js *JobApplicationAPI) UpdateApplicationStatus(applicationId string, status domain.ApplicationStatus) error {
+	err := js.jar.UpdateApplicationStatusRepo(applicationId, status)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
