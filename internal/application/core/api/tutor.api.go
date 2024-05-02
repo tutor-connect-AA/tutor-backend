@@ -35,14 +35,24 @@ func (ts *TutorService) GetTutor(id string) (*domain.Tutor, error) {
 	return tutor, nil
 }
 
-func (ts *TutorService) LoginTutor(email, password string) (*domain.Tutor, error) {
-	tutor, err := ts.tutorRepo.GetTutorByEmail(email)
+func (ts *TutorService) LoginTutor(username, password string) (string, error) {
+	ttr, err := ts.tutorRepo.GetTutorByUsername(username)
+	// fmt.Printf("client at client login service is %v", clt)
+
 	if err != nil {
-		return nil, err
-	}
-	if checkPass := utils.CheckPass(tutor.Password, password); checkPass != nil {
-		return nil, err
+		return "", err
 	}
 
-	return tutor, nil
+	//Handle different login errors differently
+
+	err = utils.CheckPass(ttr.Password, password)
+	if err != nil {
+		return "", err
+	}
+	jwtToken, err := utils.Tokenize(ttr.Id)
+
+	if err != nil {
+		return "", err
+	}
+	return jwtToken, nil
 }

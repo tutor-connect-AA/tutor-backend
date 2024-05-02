@@ -33,8 +33,9 @@ type job_table struct {
 	Preferred_Gender      domain.Gender
 	Contact_Hour_Per_Week int
 	Status                domain.JobStatus
-	Hourly_Rate_Min       int `gorm:"column:hourly_rate_min;check:Hourly_Rate_Min > 0 "`
-	Hourly_Rate_Max       int `gorm:"column:hourly_mate_max;check:Hourly_Rate_Min > 0 "`
+	Hourly_Rate_Min       int                     `gorm:"column:hourly_rate_min;check:Hourly_Rate_Min > 0 "`
+	Hourly_Rate_Max       int                     `gorm:"column:hourly_mate_max;check:Hourly_Rate_Min > 0 "`
+	Applications          []job_application_table `gorm:"foreignKey:job_id"`
 	// Clt                   client_table
 }
 

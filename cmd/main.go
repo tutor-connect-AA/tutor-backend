@@ -14,6 +14,8 @@ import (
 
 func main() {
 
+	//Login endpoint should be shared by tutor and client?
+
 	var dsn = flag.String("dsn", "postgres://postgres:Maverick2020!@localhost:5432/tutor-connect", "Connection string to database")
 	dbConnection, err := db.ConnectDB(*dsn)
 
@@ -37,6 +39,11 @@ func main() {
 	tutAPI := api.NewTutorAPI(tutRepo)
 	tutHandler := handlers.NewTutorHandler(tutAPI)
 
+	//Job Application configuration
+	jaRepo := db.NewJobApplicationRepo(dbConnection)
+	jaAPI := api.NewJobApplicationAPI(jaRepo)
+	jaHandler := handlers.NewJobApplicationHandler(jaAPI)
+
 	mux := http.NewServeMux()
 
 	protected := alice.New(AuthMiddleware)
@@ -54,6 +61,12 @@ func main() {
 	mux.HandleFunc("/job/all", jobHandler.GetJobs)
 
 	mux.Handle("/tutor/register", fileUpload.ThenFunc(tutHandler.RegisterTutor))
+	mux.HandleFunc("/tutor/login", tutHandler.LoginTutor)
+
+	mux.HandleFunc("/jobApplication/newJob", jaHandler.Apply)
+	mux.HandleFunc("/jobApplication/job", jaHandler.ApplicationsByJob)
+	mux.HandleFunc("/jobApplication/tutor", jaHandler.ApplicationsByJob)
+	mux.HandleFunc("/jobApplication/client", jaHandler.ApplicationsByClient)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
