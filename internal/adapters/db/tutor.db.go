@@ -45,6 +45,7 @@ type tutor_table struct {
 	PreferredSubjects string //pq.StringArray `gorm:"type:text[]"`   Limited to 2 choices
 	// PreferredWorkLocation can be removed if not required for database storage
 	// PreferredWorkLocation    string   // Optional
+	Applications []job_application_table `gorm:"foreignKey:applicant_id"`
 }
 
 func (tr *TutorRepo) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {
@@ -117,9 +118,9 @@ func (tr *TutorRepo) GetTutorByIdRepo(id string) (*domain.Tutor, error) {
 	}, nil
 }
 
-func (tr *TutorRepo) GetTutorByEmail(email string) (*domain.Tutor, error) {
+func (tr *TutorRepo) GetTutorByUsername(username string) (*domain.Tutor, error) {
 	var tutor *tutor_table
-	res := tr.db.Where("username = ?", email).Find(&tutor)
+	res := tr.db.Where("username = ?", username).Find(&tutor)
 	if res.Error != nil {
 		return nil, res.Error
 	}
