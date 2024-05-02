@@ -36,21 +36,33 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	token := r.Header.Get("Authorization")
-	token = token[len("Bearer "):]
+	payload, err := utils.GetPayload(r)
 
-	claims, err := utils.VerifyToken(token)
 	if err != nil {
-		fmt.Printf("Could not get client id from token to post a job %v", err)
-		http.Error(w, "Could not post job", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload form token", http.StatusInternalServerError)
 		return
 	}
-	clientID, ok := claims["id"].(string)
-	fmt.Println("Client id is ", clientID)
-	if !ok {
-		fmt.Println("Could not find user ID in claims")
-		return
-	}
+
+	// token := r.Header.Get("Authorization")
+	// token = token[len("Bearer "):]
+
+	// if err != nil {
+	// 	http.Error(w, "Could not get payload form token", http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// claims, err := utils.VerifyToken(token)
+	// if err != nil {
+	// 	fmt.Printf("Could not get client id from token to post a job %v", err)
+	// 	http.Error(w, "Could not post job", http.StatusInternalServerError)
+	// 	return
+	// }
+	// clientID, ok := claims["id"].(string)
+	// fmt.Println("Client id is ", clientID)
+	// if !ok {
+	// 	fmt.Println("Could not find user ID in claims")
+	// 	return
+	// }
 	dl, err := time.Parse("2006-01-02", r.PostForm.Get("deadline"))
 	if err != nil {
 		fmt.Printf("Could not parse deadline %v", err)
@@ -108,7 +120,7 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 	var nj = domain.Job{
 		Title:                 r.PostForm.Get("title"),
 		Description:           r.PostForm.Get("description"),
-		Posted_By:             clientID,
+		Posted_By:             payload["id"],
 		Deadline:              dl,
 		Region:                r.PostForm.Get("region"),
 		City:                  r.PostForm.Get("city"),
@@ -151,7 +163,7 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, job := range jbs {
-		fmt.Fprintf(w, "%v\n", job)
+		fmt.Fprint(w, *job)
 	}
 
 	// fmt.Fprintf(w, "Got list of jobs successfully %v", jbs)
