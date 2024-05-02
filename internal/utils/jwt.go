@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -57,4 +58,30 @@ func VerifyToken(tokenString string) (map[string]interface{}, error) {
 	claims := token.Claims.(jwt.MapClaims)
 	return claims, nil
 	// return nil
+}
+
+func GetPayload(r *http.Request) (map[string]string, error) {
+	// token := r.Header.Get("Authorization")
+	// token = token[len("Bearer "):]
+	payload := make(map[string]string)
+	token := r.Header.Get("Authorization")
+	token = token[len("Bearer "):]
+
+	if err != nil {
+		return payload, err
+	}
+
+	claims, err := VerifyToken(token)
+	if err != nil {
+		fmt.Printf("Could not verify token%v", err)
+		return payload, err
+	}
+	id, ok := claims["id"].(string)
+	fmt.Println("id in payload is ", id)
+	if !ok {
+		fmt.Println("Could not find user ID in claims")
+		return payload, err
+	}
+	payload["id"] = id
+	return payload, nil
 }
