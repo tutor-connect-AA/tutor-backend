@@ -31,7 +31,7 @@ func (js *JobApplicationAPI) GetApplication(id string) (*domain.JobApplication, 
 	return ja, nil
 }
 
-func (js *JobApplicationAPI) GetApplicationsbyJob(jId string) ([]*domain.JobApplication, error) {
+func (js *JobApplicationAPI) GetApplicationsByJob(jId string) ([]*domain.JobApplication, error) {
 	apls, err := js.jar.GetApplicationsByJobRepo(jId)
 	if err != nil {
 		return nil, err

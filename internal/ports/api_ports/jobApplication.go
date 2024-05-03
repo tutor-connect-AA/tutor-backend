@@ -5,7 +5,7 @@ import "github.com/tutor-connect-AA/tutor-backend/internal/application/core/doma
 type JobApplicationAPIPort interface {
 	Apply(domain.JobApplication) (*domain.JobApplication, error)
 	GetApplication(id string) (*domain.JobApplication, error)
-	GetApplicationsbyJob(jId string) ([]*domain.JobApplication, error)
+	GetApplicationsByJob(jId string) ([]*domain.JobApplication, error)
 	GetApplicationsByTutor(tutorId string) ([]*domain.JobApplication, error)
 	GetApplicationsByClient(clientId string) ([]*domain.JobApplication, error)
 	UpdateApplicationStatus(applicationId string, status domain.ApplicationStatus) error
