@@ -58,7 +58,7 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 		return
 	}
 
-	apls, err := jaH.jaSer.GetApplicationsbyJob(jId)
+	apls, err := jaH.jaSer.GetApplicationsByJob(jId)
 	if err != nil {
 		http.Error(w, "Could not fetch applications", http.StatusInternalServerError)
 		return
@@ -113,10 +113,20 @@ func (jaH *JobApplicationHandler) ApplicationsByClient(w http.ResponseWriter, r 
 
 }
 func (jaH *JobApplicationHandler) Hire(w http.ResponseWriter, r *http.Request) {
-	applicationId := r.URL.Query().Get("id")
-	err := jaH.jaSer.UpdateApplicationStatus(applicationId, domain.HIRED)
 
+	checkoutURL, err := utils.DoPayment("mahider3991@gmail.com")
+	fmt.Println("redirected to : ", checkoutURL)
 	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Payment redirection failed", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, checkoutURL, http.StatusSeeOther)
+	utils.VerifyPayment()
+	applicationId := r.URL.Query().Get("id")
+	err = jaH.jaSer.UpdateApplicationStatus(applicationId, domain.HIRED)
+	if err != nil {
+		fmt.Println(err)
 		http.Error(w, "Could not perform hiring operation", http.StatusInternalServerError)
 		return
 	}
