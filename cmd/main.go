@@ -67,6 +67,7 @@ func main() {
 	mux.HandleFunc("/jobApplication/job", jaHandler.ApplicationsByJob)
 	mux.HandleFunc("/jobApplication/tutor", jaHandler.ApplicationsByJob)
 	mux.HandleFunc("/jobApplication/client", jaHandler.ApplicationsByClient)
+	mux.HandleFunc("/jobApplication/Hire", jaHandler.Hire)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
