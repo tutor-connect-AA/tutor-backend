@@ -42,7 +42,7 @@ func main() {
 	//Job Application configuration
 	jaRepo := db.NewJobApplicationRepo(dbConnection)
 	jaAPI := api.NewJobApplicationAPI(jaRepo)
-	jaHandler := handlers.NewJobApplicationHandler(jaAPI)
+	jaHandler := handlers.NewJobApplicationHandler(jaAPI, clientAPI)
 
 	mux := http.NewServeMux()
 
@@ -67,7 +67,8 @@ func main() {
 	mux.HandleFunc("/jobApplication/job", jaHandler.ApplicationsByJob)
 	mux.HandleFunc("/jobApplication/tutor", jaHandler.ApplicationsByJob)
 	mux.HandleFunc("/jobApplication/client", jaHandler.ApplicationsByClient)
-	mux.HandleFunc("/jobApplication/Hire", jaHandler.Hire)
+	mux.HandleFunc("/jobApplication/hire", jaHandler.Hire)
+	mux.HandleFunc("/jobApplication/verifyHire", jaHandler.VerifyHire)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)

@@ -8,29 +8,26 @@ import (
 	"strings"
 )
 
-func DoPayment(email string) (string, error) {
+func DoPayment( /*email, */ tx_ref, return_url string, amount int) (string, error) {
 
 	url := "https://api.chapa.co/v1/transaction/initialize"
 	method := "POST"
 	plString := fmt.Sprintf(`{
-		"amount":"69",
+		"amount":"%v",
 		 "currency": "ETB",
 		 "email": "%v",
-		 "first_name": "Bilen",
-		 "last_name": "Gizachew",
-		 "phone_number": "0912345678",
-		 "tx_ref": "chewatatest-8182",
+		 "tx_ref": "%v",
 		 "callback_url": "https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60",
-		 "return_url": "https://www.github.com/mahider-t",
-		 "customization[title]": "Payment for my favorite merchant",
-		 "customization[description]": "I love online payments"
-		 }`, email)
+		 "return_url": "%v",
+		 "customization[title]": "Payment for my favourite merchant",
+  "customization[description]": "I love online payments"
+		 }`, amount, "mahider3991@gmail.com", tx_ref, return_url)
 
 	// fmt.Println("My plString is :", plString)
 
 	payload := strings.NewReader(plString)
 
-	fmt.Println("My payload is :", payload)
+	fmt.Println("\nMy payload is :\n", payload)
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
@@ -54,26 +51,30 @@ func DoPayment(email string) (string, error) {
 		fmt.Println(err)
 		return "", err
 	}
+	fmt.Println("body at DoPayment", string(body))
 	var jsonBody map[string]interface{}
 	err = json.Unmarshal(body, &jsonBody)
 	if err != nil {
 		fmt.Println("Error unmarshalling json", err)
 		return "", err
 	}
-	checkoutURL, ok := jsonBody["data"].(map[string]interface{})["checkout_url"].(string)
-	if ok {
-		fmt.Println("Checkout URL:", checkoutURL)
+	if data, ok := jsonBody["data"].(map[string]interface{}); ok {
+		if checkoutURL, ok := data["checkout_url"].(string); ok {
+			fmt.Printf("Checkout URL at DoPayment is %v", checkoutURL)
+			return checkoutURL, nil
+		} else {
+			return "", err
+		}
 	} else {
-		fmt.Println("Error: Could not access checkout URL")
 		return "", err
 	}
-	fmt.Print(jsonBody)
-	return checkoutURL, nil
+
 }
 
-func VerifyPayment() {
+func VerifyPayment(tx_ref string) (string, error) {
 
-	url := "https://api.chapa.co/v1/transaction/verify/chewatatest-8182"
+	// url := `https://api.chapa.co/v1/transaction/verify/${tx_ref}`
+	url := fmt.Sprintf(`https://api.chapa.co/v1/transaction/verify/%v`, tx_ref)
 	method := "GET"
 
 	payload := strings.NewReader(``)
@@ -83,21 +84,23 @@ func VerifyPayment() {
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return "", err
 	}
 	req.Header.Add("Authorization", "Bearer CHASECK_TEST-7rRq6kCN5opIeUPSEauZjDyVHESdPJoJ")
 
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return "", err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return "", err
 	}
+
 	fmt.Println(string(body))
+	return string(body), nil
 }
