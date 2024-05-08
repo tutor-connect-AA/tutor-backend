@@ -132,9 +132,11 @@ func (jaH *JobApplicationHandler) Hire(w http.ResponseWriter, r *http.Request) {
 
 	tx_ref := utils.RandomString(20)
 	return_url := "https://www.google.com"
-	return_url_actual := fmt.Sprintf(`127.0.0.1:8080/jobApplication/verifyHire?txRef=%v&appId=%v`, tx_ref, app_id)
+	return_url_actual := fmt.Sprintf(`localhost:8080/jobApplication/verifyHire?txRef=%v&appId=%v`, tx_ref, app_id) //to be used later when deployed(b.v of verification error in url from Chapa )
 	fmt.Printf("return url at verify hire is: %v", return_url)
+
 	checkoutURL, err := utils.DoPayment( /*clientInfo.Email,*/ tx_ref, return_url, 100)
+
 	fmt.Printf("Checkout URL is :%v", checkoutURL)
 	fmt.Println("redirected to : ", return_url_actual)
 	if err != nil {
@@ -142,7 +144,7 @@ func (jaH *JobApplicationHandler) Hire(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Payment redirection failed", http.StatusInternalServerError)
 		return
 	}
-	// http.Redirect(w, r, return_url_actual, http.StatusSeeOther)
+	http.Redirect(w, r, return_url_actual, http.StatusSeeOther)
 	// applicationId := r.URL.Query().Get("id")
 	// err = jaH.jaSer.UpdateApplicationStatus(applicationId, domain.HIRED)
 	// if err != nil {
