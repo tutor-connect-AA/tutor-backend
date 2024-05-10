@@ -153,8 +153,25 @@ func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Got job successfully %v", jb)
 }
 
+// Use offset pagination
+// limit of 2 for now at least
+// first page:
+// offset == 0 and limit
 func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
-	jbs, err := adp.jobSer.GetListOfJobs()
+
+	p := r.URL.Query().Get("page")
+	if p == "" {
+		p = "0"
+	}
+	pageNumber, err := strconv.Atoi(p)
+	if err != nil {
+		http.Error(w, `Could not get a list of jobs`, http.StatusInternalServerError)
+		fmt.Printf("Could not convert string to int %v", err)
+		return
+	}
+	const pageSize = 2
+	offset := (pageNumber - 1) * pageSize
+	jbs, err := adp.jobSer.GetListOfJobs(offset, pageSize)
 
 	if err != nil {
 		fmt.Printf("Error at getting list of jobs %v", err)
