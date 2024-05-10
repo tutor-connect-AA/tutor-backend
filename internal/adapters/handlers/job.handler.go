@@ -137,7 +137,14 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not post job ", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "Created job : %v", jb)
+
+	err = utils.WriteJSON(w, http.StatusOK, jb, nil)
+	if err != nil {
+		fmt.Printf("Could not decode to json %v", err)
+		http.Error(w, "JSON decoding failed", http.StatusInternalServerError)
+		return
+	}
+	// fmt.Fprintf(w, "Created job : %v", jb)
 }
 
 func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
@@ -150,7 +157,14 @@ func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not get a job by id", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "Got job successfully %v", jb)
+
+	err = utils.WriteJSON(w, http.StatusOK, jb, nil)
+	if err != nil {
+		fmt.Printf("Could not get a job by id %v", err)
+		http.Error(w, "Could not get a job by id", http.StatusInternalServerError)
+		return
+	}
+	// fmt.Fprintf(w, "Got job successfully %v", jb)
 }
 
 // Use offset pagination
@@ -159,17 +173,20 @@ func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
 // offset == 0 and limit
 func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 
+	const pageSize = 2
+
 	p := r.URL.Query().Get("page")
 	if p == "" {
 		p = "0"
 	}
+
 	pageNumber, err := strconv.Atoi(p)
 	if err != nil {
 		http.Error(w, `Could not get a list of jobs`, http.StatusInternalServerError)
 		fmt.Printf("Could not convert string to int %v", err)
 		return
 	}
-	const pageSize = 2
+
 	offset := (pageNumber - 1) * pageSize
 	jbs, err := adp.jobSer.GetListOfJobs(offset, pageSize)
 
@@ -179,8 +196,11 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, job := range jbs {
-		fmt.Fprint(w, *job)
+	err = utils.WriteJSON(w, http.StatusOK, jbs, nil)
+	if err != nil {
+		fmt.Printf("Could not get a list of jobs %v", err)
+		http.Error(w, "Could not get a list of jobs", http.StatusInternalServerError)
+		return
 	}
 
 	// fmt.Fprintf(w, "Got list of jobs successfully %v", jbs)

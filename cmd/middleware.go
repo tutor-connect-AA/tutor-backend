@@ -24,7 +24,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			fmt.Print("Invalid token")
 			return
 		}
-		fmt.Fprintf(w, "You are authorized")
+		// fmt.Fprintf(w, "You are authorized")
 		next.ServeHTTP(w, r)
 	})
 }
