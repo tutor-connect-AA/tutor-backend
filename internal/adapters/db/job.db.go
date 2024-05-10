@@ -90,15 +90,19 @@ func (jr JobRepo) GetJobByIdRepo(id string) (*domain.Job, error) {
 	}, nil
 }
 
-func (jr JobRepo) GetJobsRepo() ([]*domain.Job, error) {
+func (jr JobRepo) GetJobsRepo(offset, limit int) ([]*domain.Job, error) {
 	var jbs []*job_table
 
 	var jobList []*domain.Job
 
-	res := jr.db.Find(&jbs)
-	if res.Error != nil {
-		return nil, res.Error
+	if err := jr.db.Order("created_at").Offset(offset).Limit(limit).Find(&jbs).Error; err != nil {
+		return nil, err
 	}
+
+	// res := jr.db.Find(&jbs)
+	// if res.Error != nil {
+	// 	return nil, res.Error
+	// }
 
 	for _, job := range jbs {
 		oneJob := &domain.Job{
@@ -120,5 +124,5 @@ func (jr JobRepo) GetJobsRepo() ([]*domain.Job, error) {
 		}
 		jobList = append(jobList, oneJob)
 	}
-	return jobList, res.Error
+	return jobList, nil
 }

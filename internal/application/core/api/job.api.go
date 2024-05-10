@@ -31,8 +31,8 @@ func (ja JobAPI) GetJob(id string) (*domain.Job, error) {
 	return j, nil
 }
 
-func (ja JobAPI) GetListOfJobs() ([]*domain.Job, error) {
-	js, err := ja.jr.GetJobsRepo()
+func (ja JobAPI) GetListOfJobs(offset, limit int) ([]*domain.Job, error) {
+	js, err := ja.jr.GetJobsRepo(offset, limit)
 	if err != nil {
 		return nil, err
 	}
