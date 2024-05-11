@@ -38,7 +38,7 @@ func Tokenize(id string) (string, error) {
 	claims := token.Claims.(jwt.MapClaims)
 	claims["sub"] = "subject"
 	claims["id"] = id
-	claims["exp"] = time.Now().Add(time.Second * 30).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 
 	// Sign the token with the secret key
 	tokenString, err := token.SignedString(key)
