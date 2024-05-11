@@ -159,27 +159,27 @@ type LoginReq struct {
 	Password string `json:"password"`
 }
 
-func (adp ClientAdapter) LoginClient(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
-		return
-	}
-	var loginData *LoginReq
-	err := json.NewDecoder(r.Body).Decode(&loginData)
-	if err != nil {
-		http.Error(w, "Could not decode json", http.StatusInternalServerError)
-		return
-	}
+// func (adp ClientAdapter) LoginClient(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method != http.MethodPost {
+// 		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
+// 		return
+// 	}
+// 	var loginData *LoginReq
+// 	err := json.NewDecoder(r.Body).Decode(&loginData)
+// 	if err != nil {
+// 		http.Error(w, "Could not decode json", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	token, err := adp.ser.LoginClient(loginData.Username, loginData.Password)
+// 	token, err := adp.ser.LoginClient(loginData.Username, loginData.Password)
 
-	if err != nil {
-		fmt.Println(err)
-		fmt.Fprintf(w, "Could not login")
-		return
-	}
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		fmt.Fprintf(w, "Could not login")
+// 		return
+// 	}
 
-	w.Header().Set("Authorization", "Bearer "+token)
+// 	w.Header().Set("Authorization", "Bearer "+token)
 
-	fmt.Fprintf(w, "Successfully logged in.: %v", token)
-}
+// 	fmt.Fprintf(w, "Successfully logged in.: %v", token)
+// }

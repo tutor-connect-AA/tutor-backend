@@ -132,24 +132,24 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Successfully registered tutor %v", tt)
 }
 
-func (adp TutorHandler) LoginTutor(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(10 << 20)
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
-		return
-	}
-	username := r.PostForm.Get("username")
-	password := r.PostForm.Get("password")
+// func (adp TutorHandler) LoginTutor(w http.ResponseWriter, r *http.Request) {
+// 	r.ParseMultipartForm(10 << 20)
+// 	if r.Method != http.MethodPost {
+// 		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
+// 		return
+// 	}
+// 	username := r.PostForm.Get("username")
+// 	password := r.PostForm.Get("password")
 
-	token, err := adp.ts.LoginTutor(username, password)
+// 	token, err := adp.ts.LoginTutor(username, password)
 
-	if err != nil {
-		fmt.Println(err)
-		fmt.Fprintf(w, "Could not login")
-		return
-	}
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		fmt.Fprintf(w, "Could not login")
+// 		return
+// 	}
 
-	w.Header().Set("Authorization", "Bearer "+token)
+// 	w.Header().Set("Authorization", "Bearer "+token)
 
-	fmt.Fprintf(w, "Successfully logged in.: %v", token)
-}
+// 	fmt.Fprintf(w, "Successfully logged in.: %v", token)
+// }
