@@ -67,13 +67,21 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	fileName := r.Context().Value("filePath")
-	file := r.Context().Value("file")
-	imageUrl, err := utils.UploadToCloudinary(file.(multipart.File), fileName.(string))
-	if err != nil {
-		http.Error(w, "Could not upload image to Cloudinary", http.StatusInternalServerError)
-		return
+	fileName := r.Context().Value("photoPath")
+	file := r.Context().Value("photo")
+	var imageUrl string
+	if file != nil {
+		imageUrl, err = utils.UploadToCloudinary(file.(multipart.File), fileName.(string))
+		if err != nil {
+			http.Error(w, "Could not upload image to Cloudinary", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		imageUrl = ""
 	}
+
+	fmt.Println("image link is : ", imageUrl)
+
 	newClient = domain.Client{
 		FirstName:   r.PostForm.Get("firstName"),
 		FathersName: r.PostForm.Get("fathersName"),
