@@ -6,23 +6,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type ClientRepo struct {
-	db *gorm.DB
-}
+// type ClientRepo struct {
+// 	db *gorm.DB
+// }
 
-func NewClientRepo(db *gorm.DB) *ClientRepo {
-	return &ClientRepo{
-		db: db,
-	}
-}
+// func NewClientRepo(db *gorm.DB) *ClientRepo {
+// 	return &ClientRepo{
+// 		db: db,
+// 	}
+// }
 
-type Role string
+// type Role string
 
-const (
-	client Role = "CLIENT"
-	tutor  Role = "TUTOR"
-	admin  Role = "ADMIN"
-)
+// const (
+// 	client Role = "CLIENT"
+// 	tutor  Role = "TUTOR"
+// 	admin  Role = "ADMIN"
+// )
 
 type client_table struct {
 	gorm.Model
@@ -34,15 +34,15 @@ type client_table struct {
 	Username     string    `gorm:"unique; not null"`
 	Password     string    //`gorm :"not null"`
 	Photo        string
-	Role         Role        `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
+	Role         domain.Role `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
 	Rating       float32     `gorm:"column:rating;check:rating >= 0 AND rating <= 5"`
 	Jobs         []job_table `gorm:"foreignKey:Posted_By"` //check for additional necessary info
 }
 
-func (cr ClientRepo) GetClientByIdPort(id string) (*domain.Client, error) {
+func (ur User) GetClientByIdPort(id string) (*domain.Client, error) {
 	var clientEntity client_table
-	clt := cr.db.Where("id = ?", id).First(&clientEntity)
-	// clt := cr.db.First(&clientEntity, id)
+	clt := ur.db.Where("id = ?", id).First(&clientEntity)
+	// clt := ur.db.First(&clientEntity, id)
 
 	client := &domain.Client{
 		// Id:          clientEntity.Id, how to convert the uuid to string?????
@@ -57,8 +57,8 @@ func (cr ClientRepo) GetClientByIdPort(id string) (*domain.Client, error) {
 	return client, clt.Error
 }
 
-// func (cr ClientRepo) CreateClientPort(clt Client) (*domain.Client, error)
-func (cr ClientRepo) CreateClientPort(clt domain.Client) (*domain.Client, error) {
+// func (ur ClientRepo) CreateClientPort(clt Client) (*domain.Client, error)
+func (ur *User) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 	newClient := &client_table{
 		First_Name:   clt.FirstName,
 		Fathers_Name: clt.FathersName,
@@ -67,34 +67,33 @@ func (cr ClientRepo) CreateClientPort(clt domain.Client) (*domain.Client, error)
 		Username:     clt.Username,
 		Password:     clt.Password,
 		Photo:        clt.Photo,
-		Role:         Role(clt.Role),
+		Role:         "CLIENT",
 		Rating:       clt.Rating,
 	}
-	res := cr.db.Create(&newClient)
+	newAuth := domain.Auth{
+		Username: newClient.Username,
+		Password: newClient.Password,
+		Role:     newClient.Role,
+	}
+	err := ur.CreateAuthRepo(newAuth)
+	if err != nil {
+		return nil, err
+	}
 
-	if res.Error != nil {
-		return nil, res.Error
+	cltRes := ur.db.Create(&newClient)
+
+	if cltRes.Error != nil {
+		return nil, cltRes.Error
 	}
 
 	return &clt, nil
 
-	// return &domain.Client{
-	// 	Id:          clt.id,
-	// 	FirstName:   clt.firstName,
-	// 	FathersName: clt.fathersName,
-	// 	PhoneNumber: clt.phoneNumber,
-	// 	Email:       clt.email,
-	// 	Photo:       clt.photo,
-	// 	Role:        domain.Role(clt.role),
-	// 	Rating:      clt.rating,
-	// }, nil
-
 }
 
-func (cr ClientRepo) GetClientsPort() ([]*domain.Client, error) {
+func (ur User) GetClientsPort() ([]*domain.Client, error) {
 	var clients []*client_table
 
-	res := cr.db.Find(&clients)
+	res := ur.db.Find(&clients)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -121,7 +120,7 @@ func (cr ClientRepo) GetClientsPort() ([]*domain.Client, error) {
 	return clientsReturn, nil
 }
 
-func (cr ClientRepo) UpdateClientPort(updatedFieldsObj domain.Client) error {
+func (ur *User) UpdateClientPort(updatedFieldsObj domain.Client) error {
 	updtClt := &client_table{
 		First_Name:   updatedFieldsObj.FirstName,
 		Fathers_Name: updatedFieldsObj.FathersName,
@@ -130,11 +129,11 @@ func (cr ClientRepo) UpdateClientPort(updatedFieldsObj domain.Client) error {
 		Username:     updatedFieldsObj.Username,
 		Password:     updatedFieldsObj.Password,
 		Photo:        updatedFieldsObj.Photo,
-		Role:         Role(updatedFieldsObj.Role),
+		Role:         updatedFieldsObj.Role,
 		Rating:       updatedFieldsObj.Rating,
 	}
 	// fmt.Println(updatedFieldsObj.Id)
-	res := cr.db.Model(&client_table{}).Where("id=?", updatedFieldsObj.Id).Updates(updtClt)
+	res := ur.db.Model(&client_table{}).Where("id=?", updatedFieldsObj.Id).Updates(updtClt)
 
 	if res.Error != nil {
 		return res.Error
@@ -143,10 +142,18 @@ func (cr ClientRepo) UpdateClientPort(updatedFieldsObj domain.Client) error {
 	return nil
 }
 
-func (cr ClientRepo) GetClientByUsername(username string) (*domain.Client, error) {
+func (ur User) GetClientByUsername(username string) (*domain.Client, error) {
 	var clientEntity *client_table
 
-	clt := cr.db.Where("username = ?", username).First(&clientEntity)
+	clt := ur.db.Where("username = ?", username).First(&clientEntity)
+	if clt.Error != nil {
+		if clt.Error == gorm.ErrRecordNotFound {
+			return nil, domain.ErrNoRecord
+		} else {
+			return nil, clt.Error
+		}
+	}
+
 	client := &domain.Client{
 		Id:          clientEntity.Id.String(), //how to convert the uuid to string?????
 		FirstName:   clientEntity.First_Name,
@@ -156,8 +163,8 @@ func (cr ClientRepo) GetClientByUsername(username string) (*domain.Client, error
 		Password:    clientEntity.Password,
 		Email:       clientEntity.Email,
 		Photo:       clientEntity.Photo,
-		Role:        domain.Role(clientEntity.Role),
+		Role:        clientEntity.Role,
 		Rating:      clientEntity.Rating,
 	}
-	return client, clt.Error
+	return client, nil
 }

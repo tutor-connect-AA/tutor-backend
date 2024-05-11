@@ -24,25 +24,33 @@ func main() {
 		return
 	}
 
+	userRepo := db.NewUserRepo(dbConnection)
+
 	//Client configuration
-	clientRepo := db.NewClientRepo(dbConnection)
-	clientAPI := api.NewClientAPI(clientRepo)
-	clientHandler := handlers.NewClientHandler(clientAPI)
+	// clientRepo := db.NewClientRepo(dbConnection)
+	clientSer := api.NewClientAPI(userRepo)
+	clientHandler := handlers.NewClientHandler(clientSer)
 
 	//Job configuration
 	jobRepo := db.NewJobRepo(dbConnection)
-	jobAPI := api.NewJobAPI(jobRepo)
-	jobHandler := handlers.NewJobHandler(jobAPI)
+	jobSer := api.NewJobAPI(jobRepo)
+	jobHandler := handlers.NewJobHandler(jobSer)
 
 	//tutor configuration
-	tutRepo := db.NewTutorRepo(dbConnection)
-	tutAPI := api.NewTutorAPI(tutRepo)
-	tutHandler := handlers.NewTutorHandler(tutAPI)
+	// tutRepo := db.NewTutorRepo(dbConnection)
+	tutSer := api.NewTutorAPI(userRepo)
+	tutHandler := handlers.NewTutorHandler(tutSer)
 
 	//Job Application configuration
 	jaRepo := db.NewJobApplicationRepo(dbConnection)
-	jaAPI := api.NewJobApplicationAPI(jaRepo)
-	jaHandler := handlers.NewJobApplicationHandler(jaAPI, clientAPI)
+	jaSer := api.NewJobApplicationAPI(jaRepo)
+	jaHandler := handlers.NewJobApplicationHandler(jaSer, clientSer)
+
+	//Auth handler config(client & tutor)
+	authSer := api.NewAuthService(userRepo)
+	authHandler := handlers.NewAuthHandler(authSer, clientSer, tutSer)
+
+	// authHandler := handlers.NewAuthHandler(clientSer, tutSer)
 
 	mux := http.NewServeMux()
 
@@ -54,14 +62,14 @@ func main() {
 	mux.HandleFunc("/client/listClients", clientHandler.GetListOfClients)
 	mux.HandleFunc("/client/single", clientHandler.GetClientById) //make path make sense
 	mux.Handle("/client/update", protected.ThenFunc(clientHandler.UpdateClientProfile))
-	mux.HandleFunc("/client/login", clientHandler.LoginClient)
+	// mux.HandleFunc("/client/login", clientHandler.LoginClient)
 
 	mux.Handle("/job/post", protected.ThenFunc(jobHandler.PostJob))
 	mux.HandleFunc("/job/single", jobHandler.GetJobById)
 	mux.HandleFunc("/job/all", jobHandler.GetJobs)
 
 	mux.Handle("/tutor/register", fileUpload.ThenFunc(tutHandler.RegisterTutor))
-	mux.HandleFunc("/tutor/login", tutHandler.LoginTutor)
+	// mux.HandleFunc("/tutor/login", tutHandler.LoginTutor)
 
 	mux.HandleFunc("/jobApplication/newJob", jaHandler.Apply)
 	mux.HandleFunc("/jobApplication/job", jaHandler.ApplicationsByJob)
@@ -69,6 +77,8 @@ func main() {
 	mux.HandleFunc("/jobApplication/client", jaHandler.ApplicationsByClient)
 	mux.HandleFunc("/jobApplication/hire", jaHandler.Hire)
 	mux.HandleFunc("/jobApplication/verifyHire", jaHandler.VerifyHire)
+
+	mux.HandleFunc("/login", authHandler.Login)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
