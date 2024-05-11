@@ -10,14 +10,14 @@ import (
 
 var key = []byte("secret-key")
 
-func Tokenize(id string) (string, error) {
+func Tokenize(id string, role string) (string, error) {
 
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// Set claims
 	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = "subject"
 	claims["id"] = id
+	claims["role"] = role
 	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 
 	// Sign the token with the secret key

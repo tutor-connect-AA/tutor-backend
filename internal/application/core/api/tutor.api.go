@@ -3,7 +3,6 @@ package api
 import (
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"github.com/tutor-connect-AA/tutor-backend/internal/ports/db_ports"
-	"github.com/tutor-connect-AA/tutor-backend/internal/utils"
 )
 
 type TutorService struct {
@@ -35,24 +34,32 @@ func (ts *TutorService) GetTutor(id string) (*domain.Tutor, error) {
 	return tutor, nil
 }
 
-func (ts *TutorService) LoginTutor(username, password string) (string, error) {
+func (ts *TutorService) GetTutorByUsername(username string) (*domain.Tutor, error) {
 	ttr, err := ts.tutorRepo.GetTutorByUsername(username)
-	// fmt.Printf("client at client login service is %v", clt)
-
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-
-	//Handle different login errors differently
-
-	err = utils.CheckPass(ttr.Password, password)
-	if err != nil {
-		return "", err
-	}
-	jwtToken, err := utils.Tokenize(ttr.Id)
-
-	if err != nil {
-		return "", err
-	}
-	return jwtToken, nil
+	return ttr, nil
 }
+
+// func (ts *TutorService) LoginTutor(username, password string) (string, error) {
+// 	ttr, err := ts.tutorRepo.GetTutorByUsername(username)
+// 	// fmt.Printf("client at client login service is %v", clt)
+
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	//Handle different login errors differently
+
+// 	err = utils.CheckPass(ttr.Password, password)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	jwtToken, err := utils.Tokenize(ttr.Id)
+
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return jwtToken, nil
+// }

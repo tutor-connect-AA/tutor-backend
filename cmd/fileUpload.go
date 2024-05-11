@@ -2,45 +2,38 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
 func FileUploadMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var ctx context.Context
+
+		// Check if the photo file was uploaded
 		photo, photoHeader, err := r.FormFile("photo")
-		if err != nil {
-			fmt.Printf("Could not get photo")
-			// http.Error(w, "Could not get photo file from request", http.StatusInternalServerError)
-			// return
+		if err == nil && photo != nil {
+			defer photo.Close()
+			ctx = context.WithValue(r.Context(), "photoPath", photoHeader.Filename)
+			ctx = context.WithValue(ctx, "photo", photo)
 		}
-		defer photo.Close()
-		ctx := context.WithValue(r.Context(), "photoPath", photoHeader.Filename)
-		ctx = context.WithValue(ctx, "photo", photo)
-		// fmt.Printf("The uploaded photo header: %v", photo)
 
+		// Check if the cv file was uploaded
 		cv, cvHeader, err := r.FormFile("cv")
-		if err != nil {
-			fmt.Printf("Could not get tutor's cv")
-			// http.Error(w, "Could not get tutor's cv", http.StatusInternalServerError)
-			// return
+		if err == nil && cv != nil {
+			defer cv.Close()
+			ctx = context.WithValue(r.Context(), "cvPath", cvHeader.Filename)
+			ctx = context.WithValue(ctx, "cv", cv)
 		}
-		defer cv.Close()
-		ctx = context.WithValue(ctx, "cvPath", cvHeader.Filename)
-		ctx = context.WithValue(ctx, "cv", cv)
 
-		eduCred, eduCredPath, err := r.FormFile("eduCred")
-		if err != nil {
-			fmt.Printf("Could not get education credential")
-			// http.Error(w, "Could not get education credential file", http.StatusInternalServerError)
-			// return
+		// Check if the education credential file was uploaded
+		eduCred, eduCredHeader, err := r.FormFile("eduCred")
+		if err == nil && eduCred != nil {
+			defer eduCred.Close()
+			ctx = context.WithValue(r.Context(), "eduCredPath", eduCredHeader.Filename)
+			ctx = context.WithValue(ctx, "eduCred", eduCred)
 		}
-		defer eduCred.Close()
-		ctx = context.WithValue(ctx, "eduCredPath", eduCredPath.Filename)
-		ctx = context.WithValue(ctx, "eduCred", eduCred)
 
-		// fmt.Printf("The uploaded cv header %v", cv)
-
+		// Call the next handler with the updated context
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

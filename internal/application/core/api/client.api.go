@@ -56,25 +56,32 @@ func (ca ClientAPI) UpdateClientProfile(updatedClt domain.Client) error {
 	}
 	return nil
 }
-
-func (ca ClientAPI) LoginClient(username, password string) (string, error) {
+func (ca ClientAPI) GetClientByUsername(username string) (*domain.Client, error) {
 	clt, err := ca.cr.GetClientByUsername(username)
-	// fmt.Printf("client at client login service is %v", clt)
-
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-
-	//Handle different login errors differently
-
-	err = utils.CheckPass(clt.Password, password)
-	if err != nil {
-		return "", err
-	}
-	jwtToken, err := utils.Tokenize(clt.Id)
-
-	if err != nil {
-		return "", err
-	}
-	return jwtToken, nil
+	return clt, nil
 }
+
+// func (ca ClientAPI) LoginClient(username, password string) (string, error) {
+// 	clt, err := ca.cr.GetClientByUsername(username)
+// 	// fmt.Printf("client at client login service is %v", clt)
+
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	//Handle different login errors differently
+
+// 	err = utils.CheckPass(clt.Password, password)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	jwtToken, err := utils.Tokenize(clt.Id)
+
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return jwtToken, nil
+// }

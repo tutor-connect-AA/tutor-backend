@@ -8,15 +8,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type TutorRepo struct {
-	db *gorm.DB
-}
+// type User struct {
+// 	db *gorm.DB
+// }
 
-func NewTutorRepo(db *gorm.DB) *TutorRepo {
-	return &TutorRepo{
-		db: db,
-	}
-}
+// func NewTutorRepo(db *gorm.DB) *User {
+// 	return &User{
+// 		db: db,
+// 	}
+// }
 
 type tutor_table struct {
 	gorm.Model
@@ -31,7 +31,7 @@ type tutor_table struct {
 	Bio                 string
 	Username            string `gorm:"unique"`
 	Password            string
-	Role                Role
+	Role                domain.Role
 	CV                  string // Assuming CV is a file
 	HourlyRate          float32
 	Region              string
@@ -48,7 +48,7 @@ type tutor_table struct {
 	Applications []job_application_table `gorm:"foreignKey:applicant_id"`
 }
 
-func (tr *TutorRepo) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {
+func (ur *User) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {
 	hashedPass, err := utils.HashPass(tutor.Password)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (tr *TutorRepo) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error)
 		Bio:                 tutor.Bio,
 		Username:            tutor.Username,
 		Password:            hashedPass,
-		Role:                Role(tutor.Role),
+		Role:                "TUTOR",
 		CV:                  tutor.CV,
 		HourlyRate:          tutor.HourlyRate,
 		Region:              tutor.Region,
@@ -78,16 +78,28 @@ func (tr *TutorRepo) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error)
 		GraduationDate:    tutor.GraduationDate,
 		PreferredSubjects: tutor.PreferredSubjects,
 	}
-	res := tr.db.Create(&newTutor)
+
+	newAuth := domain.Auth{
+		Username: newTutor.Username,
+		Password: newTutor.Password,
+		Role:     newTutor.Role,
+	}
+
+	err = ur.CreateAuthRepo(newAuth)
+	if err != nil {
+		return nil, err
+	}
+
+	res := ur.db.Create(&newTutor)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 	return tutor, nil
 }
 
-func (tr *TutorRepo) GetTutorByIdRepo(id string) (*domain.Tutor, error) {
+func (ur *User) GetTutorByIdRepo(id string) (*domain.Tutor, error) {
 	var tutor *tutor_table
-	res := tr.db.Where("id = ?", id).First(&tutor)
+	res := ur.db.Where("id = ?", id).First(&tutor)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -118,11 +130,17 @@ func (tr *TutorRepo) GetTutorByIdRepo(id string) (*domain.Tutor, error) {
 	}, nil
 }
 
-func (tr *TutorRepo) GetTutorByUsername(username string) (*domain.Tutor, error) {
+func (ur *User) GetTutorByUsername(username string) (*domain.Tutor, error) {
 	var tutor *tutor_table
-	res := tr.db.Where("username = ?", username).Find(&tutor)
+	res := ur.db.Where("username = ?", username).Find(&tutor)
 	if res.Error != nil {
-		return nil, res.Error
+		if res.Error != nil {
+			if res.Error == gorm.ErrRecordNotFound {
+				return nil, domain.ErrNoRecord
+			} else {
+				return nil, res.Error
+			}
+		}
 	}
 	return &domain.Tutor{
 		Id:                  tutor.Id,
@@ -136,7 +154,7 @@ func (tr *TutorRepo) GetTutorByUsername(username string) (*domain.Tutor, error) 
 		Bio:                 tutor.Bio,
 		Username:            tutor.Username,
 		Password:            tutor.Password,
-		Role:                domain.Role(tutor.Role),
+		Role:                tutor.Role,
 		CV:                  tutor.CV,
 		HourlyRate:          tutor.HourlyRate,
 		Region:              tutor.Region,
