@@ -1,12 +1,8 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"mime/multipart"
 	"net/http"
-	"strconv"
 
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"github.com/tutor-connect-AA/tutor-backend/internal/ports/api_ports"
@@ -23,19 +19,6 @@ func NewClientHandler(ser api_ports.ClientAPIPort) *ClientAdapter {
 	}
 }
 
-type Client struct {
-	Id          string      `form:"id"`
-	FirstName   string      `form:"firstName"`
-	FathersName string      `form:"fathersName,omitempty"` //optional
-	PhoneNumber string      `form:"phoneNumber"`
-	Email       string      `form:"email"`
-	Username    string      `form:"username"`
-	Password    string      `form:"password"`
-	Photo       string      `form:"photo"`
-	Role        domain.Role `form:"role"` // should role even exist?
-	Rating      float32     `form:"rating"`
-}
-
 func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
@@ -44,43 +27,12 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var newClient domain.Client
-	contentType := r.Header.Get("Content-Type")
-
-	if contentType == "application/json" {
-		err := json.NewDecoder(r.Body).Decode(&newClient)
-
-		if err != nil {
-			log.Println(err)
-			http.Error(w, "Could not decode json", http.StatusInternalServerError)
-			return
-		}
-	}
 
 	err := r.ParseMultipartForm(10 << 20) // 10 MB max size
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	rating, err := strconv.ParseFloat(r.PostForm.Get("rating"), 64)
-	if err != nil {
-		fmt.Print(err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	fileName := r.Context().Value("photoPath")
-	file := r.Context().Value("photo")
-	var imageUrl string
-	if file != nil {
-		imageUrl, err = utils.UploadToCloudinary(file.(multipart.File), fileName.(string))
-		if err != nil {
-			http.Error(w, "Could not upload image to Cloudinary", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		imageUrl = ""
-	}
-
-	fmt.Println("image link is : ", imageUrl)
 
 	newClient = domain.Client{
 		FirstName:   r.PostForm.Get("firstName"),
@@ -89,9 +41,8 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 		Email:       r.PostForm.Get("email"),
 		Username:    r.PostForm.Get("username"),
 		Password:    r.PostForm.Get("password"),
-		Photo:       imageUrl,
-		Role:        domain.Role(r.PostForm.Get("role")),
-		Rating:      float32(rating),
+		Role:        domain.Role("CLIENT"),
+		Rating:      0,
 	}
 	// fmt.Print(newClient)
 	clt, err := adp.ser.RegisterClient(newClient)
@@ -116,10 +67,6 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 
 	// fmt.Fprintf(w, "Client registered successfully : %v", clt)
 
-}
-
-type GetClientIdReq struct {
-	Id string `json:"id"`
 }
 
 func (adp ClientAdapter) GetClientById(w http.ResponseWriter, r *http.Request) {
@@ -173,15 +120,38 @@ func (adp ClientAdapter) UpdateClientProfile(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
 		return
 	}
-	var updatedClient Client
-	err := json.NewDecoder(r.Body).Decode(&updatedClient)
-
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max size
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Could not decode json", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("%v", updatedClient)
+	var updatedClient = domain.Client{}
+	//check that the user is updating his own profile by checking against the id in the auth token
+
+	clientId := r.URL.Query().Get("id")
+
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not update profile", http.StatusInternalServerError)
+		return
+	}
+
+	if clientId != payload["id"] {
+		http.Error(w, "Not allowed to update this profile", http.StatusForbidden)
+		return
+	}
+
+	updatedClient.Id = clientId
+
+	if firstName := r.PostForm.Get("firstName"); firstName != "" {
+		updatedClient.FirstName = firstName
+
+	}
+
+	fmt.Println("First name is : ", updatedClient.FirstName)
+	fmt.Println("Client id  and payload id is the same : ", clientId == payload["id"])
+	fmt.Printf("updatedProfile : %v", updatedClient)
+
 	err = adp.ser.UpdateClientProfile(domain.Client(updatedClient))
 
 	if err != nil {
@@ -196,10 +166,10 @@ func (adp ClientAdapter) UpdateClientProfile(w http.ResponseWriter, r *http.Requ
 	fmt.Fprintf(w, "Updated Client successfully")
 }
 
-type LoginReq struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
+// type LoginReq struct {
+// 	Username string `json:"username"`
+// 	Password string `json:"password"`
+// }
 
 // func (adp ClientAdapter) LoginClient(w http.ResponseWriter, r *http.Request) {
 // 	if r.Method != http.MethodPost {
