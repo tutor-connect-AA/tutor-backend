@@ -101,7 +101,20 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Fprintf(w, "Client registered successfully : %v", clt)
+
+	res := Response{
+		Success: true,
+		Data:    clt,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+
+	if err != nil {
+		http.Error(w, "Could not send json", http.StatusInternalServerError)
+		return
+	}
+
+	// fmt.Fprintf(w, "Client registered successfully : %v", clt)
 
 }
 
@@ -119,7 +132,17 @@ func (adp ClientAdapter) GetClientById(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Could not get client by id %v", err)
 		return
 	}
-	fmt.Fprintf(w, "Successfully got user %v", clt)
+	res := Response{
+		Success: true,
+		Data:    clt,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		http.Error(w, "Could not send json", http.StatusInternalServerError)
+		return
+	}
+
+	// fmt.Fprintf(w, "Successfully got user %v", clt)
 }
 
 func (adp ClientAdapter) GetListOfClients(w http.ResponseWriter, r *http.Request) {
@@ -131,8 +154,14 @@ func (adp ClientAdapter) GetListOfClients(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	cltList := []domain.Client{}
 	for _, clt := range clts {
-		fmt.Fprintf(w, "%v \n", *clt)
+		cltList = append(cltList, *clt)
+	}
+	err = utils.WriteJSON(w, http.StatusOK, cltList, nil)
+	if err != nil {
+		http.Error(w, "Could not send json", http.StatusInternalServerError)
+		return
 	}
 	// fmt.Fprintf(w, "Here are all the clients, %v", clts)
 
@@ -159,6 +188,11 @@ func (adp ClientAdapter) UpdateClientProfile(w http.ResponseWriter, r *http.Requ
 		fmt.Fprintf(w, "Could not update client profile")
 		return
 	}
+	res := Response{
+		Success: true,
+		Data:    "Client profile updated successfully",
+	}
+	utils.WriteJSON(w, http.StatusOK, res, nil)
 	fmt.Fprintf(w, "Updated Client successfully")
 }
 

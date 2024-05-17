@@ -137,11 +137,15 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not post job ", http.StatusInternalServerError)
 		return
 	}
+	res := Response{
+		Success: true,
+		Data:    jb,
+	}
 
-	err = utils.WriteJSON(w, http.StatusOK, jb, nil)
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		fmt.Printf("Could not decode to json %v", err)
-		http.Error(w, "JSON decoding failed", http.StatusInternalServerError)
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
 		return
 	}
 	// fmt.Fprintf(w, "Created job : %v", jb)
@@ -157,8 +161,11 @@ func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not get a job by id", http.StatusInternalServerError)
 		return
 	}
-
-	err = utils.WriteJSON(w, http.StatusOK, jb, nil)
+	res := Response{
+		Success: true,
+		Data:    jb,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not get a job by id %v", err)
 		http.Error(w, "Could not get a job by id", http.StatusInternalServerError)
@@ -190,13 +197,23 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 	offset := (pageNumber - 1) * pageSize
 	jbs, err := adp.jobSer.GetListOfJobs(offset, pageSize)
 
+	jbList := []domain.Job{}
+
+	for _, jb := range jbs {
+		jbList = append(jbList, *jb)
+	}
+
 	if err != nil {
 		fmt.Printf("Error at getting list of jobs %v", err)
 		http.Error(w, "Could not get a list of jobs", http.StatusInternalServerError)
 		return
 	}
 
-	err = utils.WriteJSON(w, http.StatusOK, jbs, nil)
+	res := Response{
+		Success: true,
+		Data:    jbList,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not get a list of jobs %v", err)
 		http.Error(w, "Could not get a list of jobs", http.StatusInternalServerError)
@@ -204,5 +221,5 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// fmt.Fprintf(w, "Got list of jobs successfully %v", jbs)
-	fmt.Printf("Here are the list of jobs %v", jbs)
+	// fmt.Printf("Here are the list of jobs %v", jbs)
 }
