@@ -49,7 +49,16 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Could not create a new job application", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "Successfully created a job application \n %v", ja)
+	res := Response{
+		Success: true,
+		Data:    ja,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
+	}
 
 }
 
@@ -66,12 +75,31 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 		http.Error(w, "Could not fetch applications", http.StatusInternalServerError)
 		return
 	}
+	res := Response{}
 	if len(apls) == 0 {
-		fmt.Fprintf(w, "No applications fr this job yet")
+		res.Success = false
+		res.Data = "No applications to be displayed yet"
+
+		err = utils.WriteJSON(w, http.StatusNoContent, res, nil)
+		if err != nil {
+			fmt.Printf("Could not encode to json %v", err)
+			http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
+	aplList := []domain.JobApplication{}
+
 	for _, apl := range apls {
-		fmt.Fprint(w, *apl)
+		aplList = append(aplList, *apl)
+	}
+	res.Success = true
+	res.Data = aplList
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -90,8 +118,20 @@ func (jaH *JobApplicationHandler) ApplicationsByTutor(w http.ResponseWriter, r *
 		fmt.Fprintf(w, "No applications by this tutor yet")
 		return
 	}
+	aplList := []domain.JobApplication{}
+
 	for _, apl := range apls {
-		fmt.Fprint(w, *apl)
+		aplList = append(aplList, *apl)
+	}
+	res := Response{
+		Success: true,
+		Data:    aplList,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
 	}
 
 }
@@ -110,10 +150,21 @@ func (jaH *JobApplicationHandler) ApplicationsByClient(w http.ResponseWriter, r 
 		fmt.Fprintf(w, "No applications for this client yet")
 		return
 	}
-	for _, apl := range apls {
-		fmt.Fprint(w, *apl)
-	}
+	aplList := []domain.JobApplication{}
 
+	for _, apl := range apls {
+		aplList = append(aplList, *apl)
+	}
+	res := Response{
+		Success: true,
+		Data:    aplList,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
+	}
 }
 func (jaH *JobApplicationHandler) Hire(w http.ResponseWriter, r *http.Request) {
 
@@ -177,5 +228,14 @@ func (jaH *JobApplicationHandler) VerifyHire(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	jaH.jaSer.UpdateApplicationStatus(app_id, domain.HIRED)
-	fmt.Fprintf(w, "Payment successful and tutor hired.")
+	res := Response{
+		Success: true,
+		Data:    "Payment successful and tutor hired.",
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
+	}
 }

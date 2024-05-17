@@ -129,6 +129,13 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = utils.WriteJSON(w, http.StatusOK, tt, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
+	}
+
 	fmt.Fprintf(w, "Successfully registered tutor %v", tt)
 }
 

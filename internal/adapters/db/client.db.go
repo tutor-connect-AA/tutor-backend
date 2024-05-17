@@ -50,6 +50,8 @@ func (ur User) GetClientByIdPort(id string) (*domain.Client, error) {
 		FathersName: clientEntity.Fathers_Name,
 		PhoneNumber: clientEntity.Phone_Number,
 		Email:       clientEntity.Email,
+		Username:    clientEntity.Username,
+		Password:    clientEntity.Password,
 		Photo:       clientEntity.Photo,
 		Role:        domain.Role(clientEntity.Role),
 		Rating:      clientEntity.Rating,

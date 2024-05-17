@@ -74,8 +74,21 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// token, err := adp.ts.LoginTutor(username, password)
+	// w.Header().Set("Authorization", "Bearer "+token)
 
-	w.Header().Set("Authorization", "Bearer "+token)
+	headers := http.Header{}
+	headers.Set("Authorization", "Bearer "+token)
+
+	res := Response{
+		Success: true,
+		Data:    "Successfully logged in",
+	}
+	// res := map[string]interface{}{
+	// 	"success": true,
+	// 	"data":    "Successfully logged in",
+	// }
+
+	utils.WriteJSON(w, http.StatusOK, res, headers)
 
 	fmt.Fprintf(w, "Successfully logged in.: %v", token)
 }
