@@ -77,7 +77,7 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 	}
 	res := Response{}
 	if len(apls) == 0 {
-		res.Success = false
+		res.Success = true
 		res.Data = "No applications to be displayed yet"
 
 		err = utils.WriteJSON(w, http.StatusNoContent, res, nil)
