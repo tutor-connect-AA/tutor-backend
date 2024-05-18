@@ -33,6 +33,10 @@ func FileUploadMiddleware(next http.Handler) http.Handler {
 			ctx = context.WithValue(ctx, "eduCred", eduCred)
 		}
 
+		if ctx == nil {
+			ctx = r.Context()
+		}
+
 		// Call the next handler with the updated context
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
