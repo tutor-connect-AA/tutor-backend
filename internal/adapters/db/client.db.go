@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"gorm.io/gorm"
@@ -26,14 +28,13 @@ import (
 
 type client_table struct {
 	gorm.Model
-	Id           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	First_Name   string    //`gorm :"not null"`
-	Fathers_Name string    //optional
-	Phone_Number string    //`gorm :"not null"`
-	Email        string    `gorm:"unique; not null"`
-	Username     string    `gorm:"unique; not null"`
-	Password     string    //`gorm :"not null"`
-	Photo        string
+	Id           uuid.UUID   `gorm:"type:uuid;default:uuid_generate_v4()"`
+	First_Name   string      //`gorm :"not null"`
+	Fathers_Name string      //optional
+	Phone_Number string      //`gorm :"not null"`
+	Email        string      `gorm:"unique; not null"`
+	Username     string      `gorm:"unique; not null"`
+	Password     string      //`gorm :"not null"`
 	Role         domain.Role `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
 	Rating       float32     `gorm:"column:rating;check:rating >= 0 AND rating <= 5"`
 	Jobs         []job_table `gorm:"foreignKey:Posted_By"` //check for additional necessary info
@@ -52,7 +53,6 @@ func (ur User) GetClientByIdPort(id string) (*domain.Client, error) {
 		Email:       clientEntity.Email,
 		Username:    clientEntity.Username,
 		Password:    clientEntity.Password,
-		Photo:       clientEntity.Photo,
 		Role:        domain.Role(clientEntity.Role),
 		Rating:      clientEntity.Rating,
 	}
@@ -68,24 +68,31 @@ func (ur *User) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 		Email:        clt.Email,
 		Username:     clt.Username,
 		Password:     clt.Password,
-		Photo:        clt.Photo,
 		Role:         "CLIENT",
 		Rating:       clt.Rating,
-	}
-	newAuth := domain.Auth{
-		Username: newClient.Username,
-		Password: newClient.Password,
-		Role:     newClient.Role,
-	}
-	err := ur.CreateAuthRepo(newAuth)
-	if err != nil {
-		return nil, err
 	}
 
 	cltRes := ur.db.Create(&newClient)
 
+	fmt.Print("The client id in create client port is ", newClient.Id)
+
 	if cltRes.Error != nil {
 		return nil, cltRes.Error
+	}
+
+	// clientID := fmt.Sprint(newClient.Id) //convert uuid to string
+
+	// fmt.Println("The client id in create client port is ", clientID)
+
+	newAuth := domain.Auth{
+		Username: newClient.Username,
+		Password: newClient.Password,
+		// ClientID: clientID,
+		Role: newClient.Role,
+	}
+	_, err := ur.CreateAuthRepo(newAuth)
+	if err != nil {
+		return nil, err
 	}
 
 	return &clt, nil
@@ -112,7 +119,6 @@ func (ur User) GetClientsPort() ([]*domain.Client, error) {
 			Email:       client.Email,
 			Username:    client.Username,
 			Password:    client.Password,
-			Photo:       client.Photo,
 			Role:        domain.Role(client.Role),
 			Rating:      client.Rating,
 		}
@@ -130,7 +136,6 @@ func (ur *User) UpdateClientPort(updatedFieldsObj domain.Client) error {
 		Email:        updatedFieldsObj.Email,
 		Username:     updatedFieldsObj.Username,
 		Password:     updatedFieldsObj.Password,
-		Photo:        updatedFieldsObj.Photo,
 		Role:         updatedFieldsObj.Role,
 		Rating:       updatedFieldsObj.Rating,
 	}
@@ -164,7 +169,6 @@ func (ur User) GetClientByUsername(username string) (*domain.Client, error) {
 		Username:    clientEntity.Username,
 		Password:    clientEntity.Password,
 		Email:       clientEntity.Email,
-		Photo:       clientEntity.Photo,
 		Role:        clientEntity.Role,
 		Rating:      clientEntity.Rating,
 	}
