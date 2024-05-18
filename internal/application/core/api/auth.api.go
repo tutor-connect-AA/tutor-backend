@@ -16,7 +16,7 @@ func NewAuthService(ar db_ports.AuthDBPort) *AuthService {
 }
 
 func (as AuthService) CreateAuth(auth domain.Auth) error {
-	if err := as.authRepo.CreateAuthRepo(auth); err != nil {
+	if _, err := as.authRepo.CreateAuthRepo(auth); err != nil {
 		return err
 	}
 	return nil

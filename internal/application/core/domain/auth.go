@@ -1,7 +1,10 @@
 package domain
 
 type Auth struct {
+	Id       string
 	Username string
 	Password string
-	Role     Role
+	// ClientID string
+	// TutorID  string
+	Role Role
 }
