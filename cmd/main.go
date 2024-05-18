@@ -44,13 +44,13 @@ func main() {
 	//Job Application configuration
 	jaRepo := db.NewJobApplicationRepo(dbConnection)
 	jaSer := api.NewJobApplicationAPI(jaRepo)
-	jaHandler := handlers.NewJobApplicationHandler(jaSer, clientSer)
+	jaHandler := handlers.NewJobApplicationHandler(jaSer, tutSer)
 
 	//Auth handler config(client & tutor)
 	authSer := api.NewAuthService(userRepo)
 	authHandler := handlers.NewAuthHandler(authSer, clientSer, tutSer)
 
-	// authHandler := handlers.NewAuthHandler(clientSer, tutSer)
+	hireH := handlers.NewHiringHandler(jaSer, clientSer)
 
 	mux := http.NewServeMux()
 
@@ -58,7 +58,7 @@ func main() {
 
 	fileUpload := alice.New(FileUploadMiddleware)
 
-	mux.Handle("/client/register", fileUpload.ThenFunc(clientHandler.Register))
+	mux.HandleFunc("/client/register", clientHandler.Register)
 	mux.HandleFunc("/client/listClients", clientHandler.GetListOfClients)
 	mux.HandleFunc("/client/single", clientHandler.GetClientById) //make path make sense
 	mux.Handle("/client/update", protected.ThenFunc(clientHandler.UpdateClientProfile))
@@ -72,11 +72,13 @@ func main() {
 	// mux.HandleFunc("/tutor/login", tutHandler.LoginTutor)
 
 	mux.HandleFunc("/jobApplication/newJob", jaHandler.Apply)
+	mux.HandleFunc("/jobApplication/single", jaHandler.GetApplicationById)
 	mux.HandleFunc("/jobApplication/job", jaHandler.ApplicationsByJob)
 	mux.HandleFunc("/jobApplication/tutor", jaHandler.ApplicationsByJob)
 	mux.HandleFunc("/jobApplication/client", jaHandler.ApplicationsByClient)
-	mux.HandleFunc("/jobApplication/hire", jaHandler.Hire)
-	mux.HandleFunc("/jobApplication/verifyHire", jaHandler.VerifyHire)
+
+	mux.HandleFunc("/jobApplication/hire", hireH.Hire)
+	mux.HandleFunc("/jobApplication/verifyHire", hireH.VerifyHire)
 
 	mux.HandleFunc("/login", authHandler.Login)
 
