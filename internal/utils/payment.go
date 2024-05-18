@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func DoPayment( /*email, */ tx_ref, return_url string, amount int) (string, error) {
+func DoPayment(email, tx_ref, return_url string, amount int) (string, error) {
 
 	url := "https://api.chapa.co/v1/transaction/initialize"
 	method := "POST"
@@ -21,7 +21,7 @@ func DoPayment( /*email, */ tx_ref, return_url string, amount int) (string, erro
 		 "return_url": "%v",
 		 "customization[title]": "Payment for my favourite merchant",
   "customization[description]": "I love online payments"
-		 }`, amount, "mahider3991@gmail.com", tx_ref, return_url)
+		 }`, amount, email, tx_ref, return_url)
 
 	// fmt.Println("My plString is :", plString)
 

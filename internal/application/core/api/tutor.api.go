@@ -26,7 +26,7 @@ func (ts *TutorService) RegisterTutor(tutor *domain.Tutor) (*domain.Tutor, error
 	return tutor, nil
 }
 
-func (ts *TutorService) GetTutor(id string) (*domain.Tutor, error) {
+func (ts *TutorService) GetTutorById(id string) (*domain.Tutor, error) {
 	tutor, err := ts.tutorRepo.GetTutorByIdRepo(id)
 	if err != nil {
 		return nil, err

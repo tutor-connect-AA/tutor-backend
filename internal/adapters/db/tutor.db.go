@@ -85,7 +85,7 @@ func (ur *User) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {
 		Role:     newTutor.Role,
 	}
 
-	err = ur.CreateAuthRepo(newAuth)
+	_, err = ur.CreateAuthRepo(newAuth)
 	if err != nil {
 		return nil, err
 	}
