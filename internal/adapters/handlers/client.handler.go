@@ -42,7 +42,7 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 		Username:    r.PostForm.Get("username"),
 		Password:    r.PostForm.Get("password"),
 		Role:        domain.Role("CLIENT"),
-		Rating:      0,
+		Rating:      3,
 	}
 	// fmt.Print(newClient)
 	clt, err := adp.ser.RegisterClient(newClient)
