@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -11,14 +10,14 @@ import (
 )
 
 type JobApplicationHandler struct {
-	jaSer api_ports.JobApplicationAPIPort
-	clSer api_ports.ClientAPIPort
+	jaSer  api_ports.JobApplicationAPIPort
+	tutSer api_ports.TutorAPIPort
 }
 
-func NewJobApplicationHandler(jaSer api_ports.JobApplicationAPIPort, clSer api_ports.ClientAPIPort) *JobApplicationHandler {
+func NewJobApplicationHandler(jaSer api_ports.JobApplicationAPIPort, tutSer api_ports.TutorAPIPort) *JobApplicationHandler {
 	return &JobApplicationHandler{
-		jaSer: jaSer,
-		clSer: clSer,
+		jaSer:  jaSer,
+		tutSer: tutSer,
 	}
 }
 
@@ -60,6 +59,56 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+}
+
+func (jaH *JobApplicationHandler) GetApplicationById(w http.ResponseWriter, r *http.Request) {
+
+	appId := r.URL.Query().Get("id")
+
+	application, err := jaH.jaSer.GetApplicationById(appId)
+
+	if err != nil {
+		http.Error(w, "Could not get application", http.StatusInternalServerError)
+		return
+	}
+	applicant, err := jaH.tutSer.GetTutorById(application.ApplicantId)
+
+	if err != nil {
+		http.Error(w, "Could not get application", http.StatusInternalServerError)
+		return
+	}
+
+	applicantFullName := fmt.Sprintf("%v %v", applicant.FirstName, applicant.FathersName)
+
+	applicantData := map[string]interface{}{
+		"fullName":                  applicantFullName,
+		"gender":                    applicant.Gender,
+		"photo":                     applicant.Photo,
+		"rating":                    applicant.Rating,
+		"hourlyRate":                applicant.HourlyRate,
+		"highestCompletedEducation": applicant.Education,
+		"fieldOfStudy":              applicant.FieldOfStudy,
+		"cv":                        applicant.CV,
+		"city":                      applicant.City,
+		"region":                    applicant.Region,
+		"preferredLocation":         applicant.PreferredWorkLocation,
+	}
+	data := map[string]interface{}{
+		"coverLetter": application.CoverLetter,
+		"applicant":   applicantData,
+	}
+
+	res := Response{
+		Success: true,
+		Data:    data,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *http.Request) {
@@ -158,79 +207,6 @@ func (jaH *JobApplicationHandler) ApplicationsByClient(w http.ResponseWriter, r 
 	res := Response{
 		Success: true,
 		Data:    aplList,
-	}
-	err = utils.WriteJSON(w, http.StatusOK, res, nil)
-	if err != nil {
-		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
-		return
-	}
-}
-func (jaH *JobApplicationHandler) Hire(w http.ResponseWriter, r *http.Request) {
-
-	// payload, err := utils.GetPayload(r)
-	// if err != nil {
-	// 	http.Error(w, "Error getting payload from JWT", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// clientInfo, err := jaH.clSer.GetClientById(payload["id"])
-	// if err != nil {
-	// 	http.Error(w, "Could not get client info", http.StatusInternalServerError)
-	// 	return
-	// }
-	app_id := r.URL.Query().Get("appId")
-
-	tx_ref := utils.RandomString(20)
-	return_url := "https://www.google.com"
-	return_url_actual := fmt.Sprintf(`localhost:8080/jobApplication/verifyHire?txRef=%v&appId=%v`, tx_ref, app_id) //to be used later when deployed(b.v of verification error in url from Chapa )
-	fmt.Printf("return url at verify hire is: %v", return_url)
-
-	checkoutURL, err := utils.DoPayment( /*clientInfo.Email,*/ tx_ref, return_url, 100)
-
-	fmt.Printf("Checkout URL is :%v", checkoutURL)
-	fmt.Println("redirected to : ", return_url_actual)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Payment redirection failed", http.StatusInternalServerError)
-		return
-	}
-	http.Redirect(w, r, return_url_actual, http.StatusSeeOther)
-	// applicationId := r.URL.Query().Get("id")
-	// err = jaH.jaSer.UpdateApplicationStatus(applicationId, domain.HIRED)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	http.Error(w, "Could not perform hiring operation", http.StatusInternalServerError)
-	// 	return
-	// }
-	// fmt.Fprint(w, "Successfully updated status of job application to HIRED")
-}
-
-func (jaH *JobApplicationHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
-	tx_ref := r.URL.Query().Get("txRef")
-	app_id := r.URL.Query().Get("appId")
-	verResult, err := utils.VerifyPayment(tx_ref)
-	if err != nil {
-		http.Error(w, "Could not verify payment", http.StatusInternalServerError)
-		return
-	}
-
-	var jsonBody map[string]interface{}
-	err = json.Unmarshal([]byte(verResult), &jsonBody)
-	if err != nil {
-		http.Error(w, "Could not unmarshal json", http.StatusInternalServerError)
-		fmt.Println("Error unmarshalling json", err)
-		return
-	}
-	data := jsonBody["data"]
-	if data == nil {
-		fmt.Fprintf(w, "Payment verification failed")
-		return
-	}
-	jaH.jaSer.UpdateApplicationStatus(app_id, domain.HIRED)
-	res := Response{
-		Success: true,
-		Data:    "Payment successful and tutor hired.",
 	}
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {

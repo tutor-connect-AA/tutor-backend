@@ -10,9 +10,10 @@ type job_application_table struct {
 	gorm.Model
 	Id          uuid.UUID                `gorm:"type:uuid;default:uuid_generate_v4()"`
 	JobId       string                   `gorm:"not null;foreignKey:job_table(Id);primaryKey"`
-	ApplicantId string                   `gorm:"not null;foreignKey:tutor_table(Id)";primaryKey`
+	ApplicantId string                   `gorm:"not null;foreignKey:tutor_table(Id);primaryKey"`
 	CoverLetter string                   `gorm:"type:text"` // Assuming text storage for cover letter
 	Status      domain.ApplicationStatus `gorm:"type:text"`
+	TxRef       string                   `gorm:"text;unique"` //this is unique so that one tx_ref can't be used to hire multiple times
 	// Tutors      []*tutor_table `foreignKey:applicant_id"`
 	// File        string    `gorm:"type:text"` // Assuming text storage for other documents (link can also be used)
 
@@ -52,7 +53,7 @@ func (jar JobApplicationRepo) GetApplicationByIdRepo(id string) (*domain.JobAppl
 	}
 	return &domain.JobApplication{
 		Id:          application.Id.String(),
-		JobId:       application.JobId,
+		JobId:       application.ApplicantId,
 		ApplicantId: application.ApplicantId,
 		CoverLetter: application.CoverLetter,
 		Status:      application.Status,
@@ -127,8 +128,8 @@ func (jar JobApplicationRepo) GetApplicationsByClientRepo(cltId string) ([]*doma
 	return applications, nil
 }
 
-func (jar JobApplicationRepo) UpdateApplicationStatusRepo(applicationId string, status domain.ApplicationStatus) error {
-	res := jar.db.Table("job_application_tables").Where("id = ?", applicationId).Update("status", status)
+func (jar JobApplicationRepo) UpdateApplicationStatusRepo(applicationId string, updatedApp domain.JobApplication) error {
+	res := jar.db.Model(&job_application_table{}).Where("id = ?", applicationId).Updates(updatedApp)
 
 	if res.Error != nil {
 		return res.Error
