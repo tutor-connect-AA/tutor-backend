@@ -9,8 +9,8 @@ import (
 type job_application_table struct {
 	gorm.Model
 	Id          uuid.UUID                `gorm:"type:uuid;default:uuid_generate_v4()"`
-	JobId       string                   `gorm:"not null;foreignKey:job_table(Id);primaryKey"`
-	ApplicantId string                   `gorm:"not null;foreignKey:tutor_table(Id);primaryKey"`
+	JobId       string                   `gorm:"not null;foreignKey:job_table(Id)"`
+	ApplicantId string                   `gorm:"not null;foreignKey:tutor_table(Id)"`
 	CoverLetter string                   `gorm:"type:text"` // Assuming text storage for cover letter
 	Status      domain.ApplicationStatus `gorm:"type:text"`
 	TxRef       string                   `gorm:"text;unique"` //this is unique so that one tx_ref can't be used to hire multiple times
