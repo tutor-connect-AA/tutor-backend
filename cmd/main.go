@@ -52,6 +52,11 @@ func main() {
 
 	hireH := handlers.NewHiringHandler(jaSer, clientSer)
 
+	//JobRequest Application configuration
+	jrRepo := db.NewJobRequestRepo(dbConnection)
+	jrSer := api.NewJobRequestAPI(jrRepo)
+	jrHandler := handlers.NewJobRequestHandler(jrSer)
+
 	mux := http.NewServeMux()
 
 	protected := alice.New(AuthMiddleware)
@@ -81,6 +86,9 @@ func main() {
 	mux.HandleFunc("/jobApplication/verifyHire", hireH.VerifyHire)
 
 	mux.HandleFunc("/login", authHandler.Login)
+
+	mux.Handle("/jobRequest/new", protected.ThenFunc(jrHandler.RequestJob))
+	mux.HandleFunc("/jobRequest/single", jrHandler.GetJobRequest)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
