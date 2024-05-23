@@ -29,14 +29,14 @@ type ApplicationStatus string
 const (
 	PENDING     ApplicationStatus = "PENDING"
 	SHORTLISTED ApplicationStatus = "SHORTLISTED"
-	// INTERESTED  ApplicationStatus = "INTERESTED"
-	HIRED ApplicationStatus = "HIRED"
+	HIRED       ApplicationStatus = "HIRED"
 )
 
 type JobRequestStatus string
 
 const (
-	REQUESTED JobRequestStatus = "REQUESTED"
-	ACCEPTED  JobRequestStatus = "ACCEPTED"
-	REJECTED  JobRequestStatus = "REJECTED"
+	REQUESTED  JobRequestStatus  = "REQUESTED"
+	INTERESTED ApplicationStatus = "INTERESTED"
+	ACCEPTED   JobRequestStatus  = "ACCEPTED"
+	REJECTED   JobRequestStatus  = "REJECTED"
 )

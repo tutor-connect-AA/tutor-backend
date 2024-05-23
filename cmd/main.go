@@ -89,6 +89,7 @@ func main() {
 
 	mux.Handle("/jobRequest/new", protected.ThenFunc(jrHandler.RequestJob))
 	mux.HandleFunc("/jobRequest/single", jrHandler.GetJobRequest)
+	// mux.HandleFunc("/jobRequest/multiple",jrHandler.)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
