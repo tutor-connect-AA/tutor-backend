@@ -3,6 +3,7 @@ package db
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"github.com/tutor-connect-AA/tutor-backend/internal/utils"
 	"gorm.io/gorm"
@@ -20,7 +21,7 @@ import (
 
 type tutor_table struct {
 	gorm.Model
-	Id                  string `gorm:"type:uuid;default:uuid_generate_v4()"`
+	Id                  uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	First_Name          string
 	Fathers_Name        string
 	Email               string `gorm:"unique"`
@@ -45,7 +46,8 @@ type tutor_table struct {
 	PreferredSubjects string //pq.StringArray `gorm:"type:text[]"`   Limited to 2 choices
 	// PreferredWorkLocation can be removed if not required for database storage
 	// PreferredWorkLocation    string   // Optional
-	Applications []job_application_table `gorm:"foreignKey:applicant_id"`
+	Applications []job_application_table `gorm:"foreignKey:applicant_id;references:Id"`
+	Job_requests []job_request_table     `gorm:"foreignKey:TutorId;references:Id"`
 }
 
 func (ur *User) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {
@@ -54,7 +56,7 @@ func (ur *User) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {
 		return nil, err
 	}
 	var newTutor = &tutor_table{
-		Id:                  tutor.Id,
+		// Id:                  tutor.Id,
 		First_Name:          tutor.FirstName,
 		Fathers_Name:        tutor.FathersName,
 		Email:               tutor.Email,
@@ -104,7 +106,7 @@ func (ur *User) GetTutorByIdRepo(id string) (*domain.Tutor, error) {
 		return nil, res.Error
 	}
 	return &domain.Tutor{
-		Id:                  tutor.Id,
+		Id:                  tutor.Id.String(),
 		FirstName:           tutor.First_Name,
 		FathersName:         tutor.Fathers_Name,
 		Email:               tutor.Email,
@@ -143,7 +145,7 @@ func (ur *User) GetTutorByUsername(username string) (*domain.Tutor, error) {
 		}
 	}
 	return &domain.Tutor{
-		Id:                  tutor.Id,
+		Id:                  tutor.Id.String(),
 		FirstName:           tutor.First_Name,
 		FathersName:         tutor.Fathers_Name,
 		Email:               tutor.Email,

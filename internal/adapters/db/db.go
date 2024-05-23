@@ -18,7 +18,7 @@ func ConnectDB(dsn string) (*gorm.DB, error) {
 		fmt.Printf("Error connecting to DB %v", err)
 		return nil, err
 	}
-	err = db.AutoMigrate(&client_table{}, &job_table{}, &tutor_table{}, &job_application_table{}, &auth_table{})
+	err = db.AutoMigrate(&client_table{}, &job_table{}, &tutor_table{}, &job_application_table{}, &auth_table{}, &job_request_table{})
 	if err != nil {
 		return nil, fmt.Errorf("db migration error: %v", err)
 	}
