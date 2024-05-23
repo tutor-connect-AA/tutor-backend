@@ -23,7 +23,8 @@ type job_table struct {
 	Id                    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	Title                 string    `gorm:"size: 255"`
 	Description           string
-	Posted_By             string //`gorm:"foreignKey:Posted_By` fk
+	Posted_By             string       //`gorm:"foreignKey:Posted_By` fk
+	Client_table          client_table `gorm:"foreignKey:Posted_By;references:Id"`
 	Deadline              time.Time
 	Region                string
 	City                  string
@@ -35,7 +36,7 @@ type job_table struct {
 	Status                domain.JobStatus
 	Hourly_Rate_Min       int                     `gorm:"column:hourly_rate_min;check:Hourly_Rate_Min > 0 "`
 	Hourly_Rate_Max       int                     `gorm:"column:hourly_mate_max;check:Hourly_Rate_Min > 0 "`
-	Applications          []job_application_table `gorm:"foreignKey:job_id"`
+	Applications          []job_application_table `gorm:"foreignKey:job_id;references:Id"`
 	// Clt                   client_table
 }
 

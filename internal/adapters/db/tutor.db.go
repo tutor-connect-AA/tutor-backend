@@ -46,7 +46,8 @@ type tutor_table struct {
 	PreferredSubjects string //pq.StringArray `gorm:"type:text[]"`   Limited to 2 choices
 	// PreferredWorkLocation can be removed if not required for database storage
 	// PreferredWorkLocation    string   // Optional
-	Applications []job_application_table `gorm:"foreignKey:applicant_id"`
+	Applications []job_application_table `gorm:"foreignKey:applicant_id;references:Id"`
+	Job_requests []job_request_table     `gorm:"foreignKey:TutorId;references:Id"`
 }
 
 func (ur *User) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {

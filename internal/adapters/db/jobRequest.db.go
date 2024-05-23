@@ -23,21 +23,13 @@ type job_request_table struct {
 	Id           uuid.UUID               `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Description  string                  `gorm:"not null"` // description for the job by the client
 	Status       domain.JobRequestStatus `gorm:"type:text"`
-	ClientId     string                  //`gorm:"not null;foreignKey:client_table(id)"` //id of the client who sent the request
-	Client_table client_table            `gorm:"foreignKey:ClientId"`
-	TutorId      string                  //`gorm:"not null;foreignKey:tutor_table(id)"` // id of the tutor for whom the request is sent
-	Tutor_table  tutor_table             `gorm:"foreignKey:ClientId"`
+	ClientId     string                  //`gorm:"foreignKey:client_table(id)"` //id of the client who sent the request
+	Client_table client_table            `gorm:"foreignKey:ClientId;references:Id"`
+	TutorId      string                  //`gorm:"foreignKey:tutor_table(id)"` // id of the tutor for whom the request is sent
+	Tutor_table  tutor_table             `gorm:"foreignKey:TutorId;references:Id"`
 }
 
 func (jrr JobRequestRepo) CreateJobRequestRepo(newJob domain.JobRequest) (*domain.JobRequest, error) {
-	// clientId, err := uuid.Parse(newJob.ClientId)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// tutorId, err := uuid.Parse(newJob.TutorId)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	jr := job_request_table{
 		Description: newJob.Description,
 		Status:      newJob.Status,
@@ -46,7 +38,6 @@ func (jrr JobRequestRepo) CreateJobRequestRepo(newJob domain.JobRequest) (*domai
 	}
 	fmt.Println(jr.ClientId, jr.TutorId)
 	if res := jrr.db.Create(&jr); res.Error != nil {
-		// fmt.Printf("Create request at repo error : ", res.Error)
 		return nil, res.Error
 
 	}
@@ -55,16 +46,16 @@ func (jrr JobRequestRepo) CreateJobRequestRepo(newJob domain.JobRequest) (*domai
 
 func (jrr JobRequestRepo) JobRequestByIdRepo(id string) (*domain.JobRequest, error) {
 	var jr job_request_table
-	if res := jrr.db.Where("id=?", id).First(jr); res.Error != nil {
+	if res := jrr.db.Where("id=?", id).First(&jr); res.Error != nil {
 		return nil, res.Error
 	}
 	return &domain.JobRequest{
 		Id:          jr.Id.String(),
 		Description: jr.Description,
 		Status:      jr.Status,
-		// ClientId:    jr.ClientId,
-		// TutorId:     jr.TutorId,
-		CreatedOn: jr.CreatedAt,
+		ClientId:    jr.ClientId,
+		TutorId:     jr.TutorId,
+		CreatedOn:   jr.CreatedAt,
 	}, nil
 }
 
@@ -81,8 +72,8 @@ func (jrr JobRequestRepo) JobRequestsRepo() ([]*domain.JobRequest, error) {
 			Id:          request.Id.String(),
 			Description: request.Description,
 			Status:      request.Status,
-			// ClientId:    request.ClientId,
-			// TutorId:     request.TutorId,
+			ClientId:    request.ClientId,
+			TutorId:     request.TutorId,
 		}
 		requests = append(requests, domainRequest)
 	}
