@@ -44,6 +44,7 @@ func (jar JobApplicationRepo) CreateApplicationRepo(apl domain.JobApplication) (
 	if res.Error != nil {
 		return nil, res.Error
 	}
+	apl.Id = newApplication.Id.String()
 	return &apl, nil
 }
 func (jar JobApplicationRepo) GetApplicationByIdRepo(id string) (*domain.JobApplication, error) {

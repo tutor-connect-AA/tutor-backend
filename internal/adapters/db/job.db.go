@@ -63,6 +63,7 @@ func (jr JobRepo) CreateJobRepo(job domain.Job) (*domain.Job, error) {
 		return nil, res.Error
 	}
 
+	job.Id = j.Id.String()
 	return &job, nil
 }
 

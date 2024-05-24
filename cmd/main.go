@@ -57,6 +57,11 @@ func main() {
 	jrSer := api.NewJobRequestAPI(jrRepo)
 	jrHandler := handlers.NewJobRequestHandler(jrSer)
 
+	//Tutor Notification
+	tNtfRepo := db.NewTutorNotificationRepo(dbConnection)
+	tNtfSer := api.NewTutorNotificationAPI(tNtfRepo)
+	tNfHandler := handlers.NewTutorNotificationHandler(tNtfSer)
+
 	mux := http.NewServeMux()
 
 	protected := alice.New(AuthMiddleware)
@@ -90,6 +95,8 @@ func main() {
 	mux.Handle("/jobRequest/new", protected.ThenFunc(jrHandler.RequestJob))
 	mux.HandleFunc("/jobRequest/single", jrHandler.GetJobRequest)
 	// mux.HandleFunc("/jobRequest/multiple",jrHandler.)
+
+	mux.HandleFunc("/tutorNotification/single", tNfHandler.GetNotification)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)

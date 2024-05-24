@@ -28,17 +28,18 @@ import (
 
 type client_table struct {
 	gorm.Model
-	Id           uuid.UUID           `gorm:"type:uuid;default:uuid_generate_v4()"`
-	First_Name   string              //`gorm :"not null"`
-	Fathers_Name string              //optional
-	Phone_Number string              //`gorm :"not null"`
-	Email        string              `gorm:"unique; not null"`
-	Username     string              `gorm:"unique; not null"`
-	Password     string              //`gorm :"not null"`
-	Role         domain.Role         `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
-	Rating       float32             `gorm:"column:rating;check:rating >= 0 AND rating <= 5"`
-	Jobs         []job_table         `gorm:"foreignKey:Posted_By;references:Id"` //check for additional necessary info
-	Job_requests []job_request_table `gorm:"foreignKey:ClientId;references:Id"`
+	Id            uuid.UUID                   `gorm:"type:uuid;default:uuid_generate_v4()"`
+	First_Name    string                      //`gorm :"not null"`
+	Fathers_Name  string                      //optional
+	Phone_Number  string                      //`gorm :"not null"`
+	Email         string                      `gorm:"unique; not null"`
+	Username      string                      `gorm:"unique; not null"`
+	Password      string                      //`gorm :"not null"`
+	Role          domain.Role                 `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
+	Rating        float32                     `gorm:"column:rating;check:rating >= 0 AND rating <= 5"`
+	Jobs          []job_table                 `gorm:"foreignKey:Posted_By;references:Id"` //check for additional necessary info
+	Job_requests  []job_request_table         `gorm:"foreignKey:ClientId;references:Id"`
+	Notifications []client_notification_table `gorm:"foreignKey:OwnerId;references:Id"`
 }
 
 func (ur User) GetClientByIdPort(id string) (*domain.Client, error) {
@@ -95,7 +96,7 @@ func (ur *User) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	clt.Id = newClient.Id.String()
 	return &clt, nil
 
 }

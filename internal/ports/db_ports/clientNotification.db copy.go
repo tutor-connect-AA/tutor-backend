@@ -1,0 +1,8 @@
+package db_ports
+
+import "github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
+
+type ClientNotificationDBPort interface {
+	CreateClientNotification(newNotification domain.Notification) (*domain.Notification, error)
+	UpdateClientNotificationStatus(id string) error
+}
