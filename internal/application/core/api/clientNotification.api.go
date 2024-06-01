@@ -9,7 +9,7 @@ type ClientNotificationAPI struct {
 	clientNotificationRepo db_ports.ClientNotificationDBPort
 }
 
-func NewNotificationAPI(clientNotificationRepo db_ports.ClientNotificationDBPort) *ClientNotificationAPI {
+func NewClientNotificationAPI(clientNotificationRepo db_ports.ClientNotificationDBPort) *ClientNotificationAPI {
 	return &ClientNotificationAPI{
 		clientNotificationRepo: clientNotificationRepo,
 	}
@@ -23,9 +23,24 @@ func (cnR ClientNotificationAPI) CreateClientNotification(newNotification domain
 	}
 	return notf, nil
 }
-func (cnR ClientNotificationAPI) OpenedNotification(id string) error {
+func (cnR ClientNotificationAPI) OpenedClientNotification(id string) error {
 
 	return cnR.clientNotificationRepo.UpdateClientNotificationStatus(id)
+}
+
+func (cnR ClientNotificationAPI) GetClientNotificationById(id string) (*domain.Notification, error) {
+	cntf, err := cnR.clientNotificationRepo.GetClientNotificationById(id)
+	if err != nil {
+		return nil, err
+	}
+	return cntf, nil
+}
+func (cnR ClientNotificationAPI) GetClientNotifications() ([]*domain.Notification, error) {
+	cNtfs, err := cnR.clientNotificationRepo.GetClientNotifications()
+	if err != nil {
+		return nil, err
+	}
+	return cNtfs, nil
 }
 
 // CreateClientNotification(newNotification domain.Notification) (*domain.Notification, error)

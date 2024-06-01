@@ -45,3 +45,41 @@ func (cNotf ClientNotificationRepo) UpdateClientNotificationStatus(id string) er
 	res := cNotf.db.Model(&client_notification_table{}).Where("id=?", id).UpdateColumn("opened", "true")
 	return res.Error
 }
+
+func (cNotf ClientNotificationRepo) GetClientNotificationById(id string) (*domain.Notification, error) {
+	var cNtf client_notification_table
+	if res := cNotf.db.First(&cNtf).Where("id=?", id); res.Error != nil {
+		return nil, res.Error
+	}
+	return &domain.Notification{
+		Id:        cNtf.Id.String(),
+		Message:   cNtf.Message,
+		OwnerId:   cNtf.OwnerId.String(),
+		Opened:    cNtf.Opened,
+		CreatedAt: cNtf.CreatedAt,
+	}, nil
+}
+
+func (cNotf ClientNotificationRepo) GetClientNotifications() ([]*domain.Notification, error) {
+	var dCNtfs []*domain.Notification
+
+	var cNtfs []client_notification_table
+
+	res := cNotf.db.Order("created_at DESC").Find(&cNtfs)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	for _, cNtf := range cNtfs {
+		dNtf := &domain.Notification{
+			Id:        cNtf.Id.String(),
+			Message:   cNtf.Message,
+			OwnerId:   cNtf.OwnerId.String(),
+			Opened:    cNtf.Opened,
+			CreatedAt: cNtf.CreatedAt,
+		}
+
+		dCNtfs = append(dCNtfs, dNtf)
+	}
+	return dCNtfs, nil
+}
