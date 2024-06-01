@@ -34,3 +34,10 @@ func (tnR TutorNotificationAPI) GetTutorNotificationById(id string) (*domain.Not
 	}
 	return tntf, nil
 }
+func (tnR TutorNotificationAPI) GetTutorNotifications() ([]*domain.Notification, error) {
+	tNtfs, err := tnR.tutorNotificationRepo.GetTutorNotifications()
+	if err != nil {
+		return nil, err
+	}
+	return tNtfs, nil
+}

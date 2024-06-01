@@ -42,10 +42,10 @@ func (hH *HiringHandler) Hire(w http.ResponseWriter, r *http.Request) {
 
 	tx_ref := utils.RandomString(20)
 	return_url := "https://www.google.com"
-	return_url_actual := fmt.Sprintf(`localhost:8080/jobApplication/verifyHire?txRef=%v&appId=%v`, tx_ref, app_id) //to be used later when deployed(b.v of verification error in url from Chapa )
+	return_url_actual := fmt.Sprintf(`http://localhost:8080/jobApplication/verifyHire?txRef=%v&appId=%v`, tx_ref, app_id) //to be used later when deployed(b.v of verification error in url from Chapa )
 	fmt.Printf("return url at verify hire is: %v", return_url)
 
-	checkoutURL, err := utils.DoPayment("mahider3991@gmail.com", tx_ref, return_url, 100)
+	checkoutURL, err := utils.DoPayment("mahider3991@gmail.com", tx_ref, return_url_actual, 100)
 
 	fmt.Printf("Checkout URL is :%v", checkoutURL)
 	fmt.Println("redirected to : ", return_url_actual)
