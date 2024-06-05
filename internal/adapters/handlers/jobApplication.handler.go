@@ -53,7 +53,7 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	newAppLink := fmt.Sprintf("http://localhost:8080//jobApplication/single?id=%v", newApplication.Id)
+	newAppLink := fmt.Sprintf("http://localhost:8080//jobApplication/single?id=%v", ja.Id)
 	message := fmt.Sprintf("Some one just applied for the job you posted. Click here to view %v", newAppLink)
 
 	job, err := jaH.jobSer.GetJob(r.URL.Query().Get("id"))
