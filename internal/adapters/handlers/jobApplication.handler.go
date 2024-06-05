@@ -10,14 +10,18 @@ import (
 )
 
 type JobApplicationHandler struct {
-	jaSer  api_ports.JobApplicationAPIPort
-	tutSer api_ports.TutorAPIPort
+	jaSer   api_ports.JobApplicationAPIPort
+	tutSer  api_ports.TutorAPIPort
+	cNtfSer api_ports.ClientNotificationAPIPort
+	jobSer  api_ports.JobAPIPort
 }
 
-func NewJobApplicationHandler(jaSer api_ports.JobApplicationAPIPort, tutSer api_ports.TutorAPIPort) *JobApplicationHandler {
+func NewJobApplicationHandler(jaSer api_ports.JobApplicationAPIPort, tutSer api_ports.TutorAPIPort, cNtfSer api_ports.ClientNotificationAPIPort, jobSer api_ports.JobAPIPort) *JobApplicationHandler {
 	return &JobApplicationHandler{
-		jaSer:  jaSer,
-		tutSer: tutSer,
+		jaSer:   jaSer,
+		tutSer:  tutSer,
+		cNtfSer: cNtfSer,
+		jobSer:  jobSer,
 	}
 }
 
@@ -48,6 +52,28 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Could not create a new job application", http.StatusInternalServerError)
 		return
 	}
+
+	newAppLink := fmt.Sprintf("http://localhost:8080//jobApplication/single?id=%v", newApplication.Id)
+	message := fmt.Sprintf("Some one just applied for the job you posted. Click here to view %v", newAppLink)
+
+	job, err := jaH.jobSer.GetJob(r.URL.Query().Get("id"))
+
+	if err != nil {
+		http.Error(w, "Could not get job from the application", http.StatusInternalServerError)
+		return
+	}
+
+	newJobAppNotf := &domain.Notification{
+		Message: message,
+		OwnerId: job.Posted_By,
+	}
+	_, err = jaH.cNtfSer.CreateClientNotification(*newJobAppNotf)
+
+	if err != nil {
+		http.Error(w, "Could not create notification", http.StatusInternalServerError)
+		return
+	}
+
 	res := Response{
 		Success: true,
 		Data:    ja,
