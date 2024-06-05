@@ -15,7 +15,7 @@ type job_application_table struct {
 	Tutor_table tutor_table              `gorm:"foreignKey:applicant_id;references:Id"`
 	CoverLetter string                   `gorm:"type:text"` // Assuming text storage for cover letter
 	Status      domain.ApplicationStatus `gorm:"type:text"`
-	TxRef       string                   `gorm:"text;unique"` //this is unique so that one tx_ref can't be used to hire multiple times
+	TxRef       string                   `gorm:"text"` //this was unique so that one tx_ref can't be used to hire multiple times (removed now find other ways)
 	// Tutors      []*tutor_table `foreignKey:applicant_id"`
 	// File        string    `gorm:"type:text"` // Assuming text storage for other documents (link can also be used)
 
@@ -45,6 +45,7 @@ func (jar JobApplicationRepo) CreateApplicationRepo(apl domain.JobApplication) (
 		return nil, res.Error
 	}
 	apl.Id = newApplication.Id.String()
+	apl.Status = newApplication.Status
 	return &apl, nil
 }
 func (jar JobApplicationRepo) GetApplicationByIdRepo(id string) (*domain.JobApplication, error) {
