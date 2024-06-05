@@ -41,8 +41,8 @@ func (cNotf ClientNotificationRepo) CreateClientNotification(newNotification dom
 	return &newNotification, nil
 }
 
-func (cNotf ClientNotificationRepo) UpdateClientNotificationStatus(id string) error {
-	res := cNotf.db.Model(&client_notification_table{}).Where("id=?", id).UpdateColumn("opened", "true")
+func (cNotf *ClientNotificationRepo) UpdateClientNotificationStatus(id string) error {
+	res := cNotf.db.Model(&client_notification_table{}).Where("id=?", id).UpdateColumn("opened", true)
 	return res.Error
 }
 

@@ -17,15 +17,15 @@ func NewClientNotificationHandler(clientNotfService api_ports.ClientNotification
 	}
 }
 
-func (tNH ClientNotificationHandler) GetClientNotification(w http.ResponseWriter, r *http.Request) {
+func (cNH *ClientNotificationHandler) GetClientNotification(w http.ResponseWriter, r *http.Request) {
 	ntfId := r.URL.Query().Get("ntfId")
-	ntf, err := tNH.clientNotfService.GetClientNotificationById(ntfId)
+	ntf, err := cNH.clientNotfService.GetClientNotificationById(ntfId)
 	if err != nil {
 		http.Error(w, "Could not get notification by id", http.StatusInternalServerError)
 		return
 	}
 
-	err = tNH.clientNotfService.OpenedClientNotification(ntfId) //changes the notification status to opened
+	err = cNH.clientNotfService.OpenedClientNotification(ntfId) //changes the notification status to opened
 	if err != nil {
 		http.Error(w, "Could not change the status of notification to opened", http.StatusInternalServerError)
 		// return this is commented because getting the notification is still successful.
