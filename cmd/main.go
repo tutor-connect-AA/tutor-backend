@@ -26,6 +26,16 @@ func main() {
 
 	userRepo := db.NewUserRepo(dbConnection)
 
+	//Tutor Notification
+	tNtfRepo := db.NewTutorNotificationRepo(dbConnection)
+	tNtfSer := api.NewTutorNotificationAPI(tNtfRepo)
+	tNfHandler := handlers.NewTutorNotificationHandler(tNtfSer)
+
+	//Client Notification
+	cNtfRepo := db.NewClientNotificationRepo(dbConnection)
+	cNtfSer := api.NewClientNotificationAPI(cNtfRepo)
+	cNfHandler := handlers.NewClientNotificationHandler(cNtfSer)
+
 	//Client configuration
 	// clientRepo := db.NewClientRepo(dbConnection)
 	clientSer := api.NewClientAPI(userRepo)
@@ -44,7 +54,7 @@ func main() {
 	//Job Application configuration
 	jaRepo := db.NewJobApplicationRepo(dbConnection)
 	jaSer := api.NewJobApplicationAPI(jaRepo)
-	jaHandler := handlers.NewJobApplicationHandler(jaSer, tutSer)
+	jaHandler := handlers.NewJobApplicationHandler(jaSer, tutSer, cNtfSer, jobSer)
 
 	//Auth handler config(client & tutor)
 	authSer := api.NewAuthService(userRepo)
@@ -56,16 +66,6 @@ func main() {
 	jrRepo := db.NewJobRequestRepo(dbConnection)
 	jrSer := api.NewJobRequestAPI(jrRepo)
 	jrHandler := handlers.NewJobRequestHandler(jrSer)
-
-	//Tutor Notification
-	tNtfRepo := db.NewTutorNotificationRepo(dbConnection)
-	tNtfSer := api.NewTutorNotificationAPI(tNtfRepo)
-	tNfHandler := handlers.NewTutorNotificationHandler(tNtfSer)
-
-	//Client Notification
-	cNtfRepo := db.NewClientNotificationRepo(dbConnection)
-	cNtfSer := api.NewClientNotificationAPI(cNtfRepo)
-	cNfHandler := handlers.NewClientNotificationHandler(cNtfSer)
 
 	mux := http.NewServeMux()
 
