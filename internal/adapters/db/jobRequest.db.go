@@ -41,6 +41,7 @@ func (jrr JobRequestRepo) CreateJobRequestRepo(newJob domain.JobRequest) (*domai
 		return nil, res.Error
 
 	}
+	newJob.Id = jr.Id.String()
 	return &newJob, nil
 }
 

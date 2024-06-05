@@ -26,6 +26,16 @@ func main() {
 
 	userRepo := db.NewUserRepo(dbConnection)
 
+	//Tutor Notification
+	tNtfRepo := db.NewTutorNotificationRepo(dbConnection)
+	tNtfSer := api.NewTutorNotificationAPI(tNtfRepo)
+	tNfHandler := handlers.NewTutorNotificationHandler(tNtfSer)
+
+	//Client Notification
+	cNtfRepo := db.NewClientNotificationRepo(dbConnection)
+	cNtfSer := api.NewClientNotificationAPI(cNtfRepo)
+	cNfHandler := handlers.NewClientNotificationHandler(cNtfSer)
+
 	//Client configuration
 	// clientRepo := db.NewClientRepo(dbConnection)
 	clientSer := api.NewClientAPI(userRepo)
@@ -44,7 +54,7 @@ func main() {
 	//Job Application configuration
 	jaRepo := db.NewJobApplicationRepo(dbConnection)
 	jaSer := api.NewJobApplicationAPI(jaRepo)
-	jaHandler := handlers.NewJobApplicationHandler(jaSer, tutSer)
+	jaHandler := handlers.NewJobApplicationHandler(jaSer, tutSer, cNtfSer, jobSer)
 
 	//Auth handler config(client & tutor)
 	authSer := api.NewAuthService(userRepo)
@@ -90,6 +100,12 @@ func main() {
 	mux.Handle("/jobRequest/new", protected.ThenFunc(jrHandler.RequestJob))
 	mux.HandleFunc("/jobRequest/single", jrHandler.GetJobRequest)
 	// mux.HandleFunc("/jobRequest/multiple",jrHandler.)
+
+	mux.HandleFunc("/tutorNotification/single", tNfHandler.GetTutorNotification)
+	mux.HandleFunc("/tutorNotifications", tNfHandler.GetTutorNotifications)
+
+	mux.HandleFunc("/clientNotification/single", cNfHandler.GetClientNotification)
+	mux.HandleFunc("/clientNotifications", cNfHandler.GetClientNotifications)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
