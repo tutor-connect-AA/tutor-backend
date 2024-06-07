@@ -33,6 +33,14 @@ func FileUploadMiddleware(next http.Handler) http.Handler {
 			ctx = context.WithValue(ctx, "eduCred", eduCred)
 		}
 
+		// Check if the interview video file was uploaded
+		interviewVideo, iVHeader, err := r.FormFile("interviewVideo")
+		if err == nil && interviewVideo != nil {
+			defer interviewVideo.Close()
+			ctx = context.WithValue(r.Context(), "interviewVideoPath", iVHeader.Filename)
+			ctx = context.WithValue(ctx, "interviewVideo", interviewVideo)
+		}
+
 		if ctx == nil {
 			ctx = r.Context()
 		}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
@@ -128,6 +129,64 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "Could not shortlist applicant", http.StatusInternalServerError)
+		return
+	}
+
+	res := Response{
+		Success: true,
+		Data:    "Applicant successfully shortlisted",
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
+
+	var videoURL string
+
+	interviewVideoPath := r.Context().Value("interviewVideoPath")
+	interviewVideo := r.Context().Value("interviewVideo")
+
+	if interviewVideo != nil {
+		videoURL, err := utils.UploadToCloudinary(interviewVideo.(multipart.File), interviewVideoPath.(string))
+		fmt.Printf("CLD result is %v  and error is %v ", videoURL, err)
+		if err != nil {
+			videoURL = ""
+			fmt.Printf("Error at upload is: %v", err)
+			http.Error(w, "Could not upload interview video", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	appId := r.URL.Query().Get("appId")
+
+	interviewAdded := &domain.JobApplication{
+		InterviewResponse: videoURL,
+	}
+
+	err := hH.jaS.UpdateApplication(appId, *interviewAdded)
+
+	if err != nil {
+		http.Error(w, "Could not upload interview response", http.StatusInternalServerError)
+		return
+	}
+
+	res := Response{
+		Success: true,
+		Data: map[string]string{
+			"interviewLink": videoURL,
+		},
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
 		return
 	}
 

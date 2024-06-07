@@ -17,6 +17,7 @@ type job_application_table struct {
 	Status             domain.ApplicationStatus `gorm:"type:text"`
 	TxRef              string                   `gorm:"text"` //this was unique so that one tx_ref can't be used to hire multiple times (removed now find other ways)
 	InterviewQuestions string                   `gorm:"text"`
+	InterviewResponse  string
 	// Tutors      []*tutor_table `foreignKey:applicant_id"`
 	// File        string    `gorm:"type:text"` // Assuming text storage for other documents (link can also be used)
 
@@ -63,6 +64,7 @@ func (jar JobApplicationRepo) GetApplicationByIdRepo(id string) (*domain.JobAppl
 		CoverLetter:        application.CoverLetter,
 		Status:             application.Status,
 		InterviewQuestions: application.InterviewQuestions,
+		InterviewResponse:  application.InterviewResponse,
 		// File:        application.File,
 	}, nil
 }
@@ -82,6 +84,7 @@ func (jar JobApplicationRepo) GetApplicationsByJobRepo(jId string) ([]*domain.Jo
 			CoverLetter:        apl.CoverLetter,
 			Status:             apl.Status,
 			InterviewQuestions: apl.InterviewQuestions,
+			InterviewResponse:  apl.InterviewResponse,
 		}
 		applications = append(applications, &newApl)
 	}
@@ -106,6 +109,7 @@ func (jar JobApplicationRepo) GetApplicationsByTutorRepo(tId string) ([]*domain.
 			CoverLetter:        apl.CoverLetter,
 			Status:             apl.Status,
 			InterviewQuestions: apl.InterviewQuestions,
+			InterviewResponse:  apl.InterviewResponse,
 		}
 		applications = append(applications, &newApl)
 	}
@@ -130,6 +134,7 @@ func (jar JobApplicationRepo) GetApplicationsByClientRepo(cltId string) ([]*doma
 			CoverLetter:        apl.CoverLetter,
 			Status:             apl.Status,
 			InterviewQuestions: apl.InterviewQuestions,
+			InterviewResponse:  apl.InterviewResponse,
 		}
 		applications = append(applications, &newApl)
 	}
@@ -167,6 +172,7 @@ func (jar JobApplicationRepo) GetApplicationsByStatusRepo(jId string, status dom
 			CoverLetter:        apl.CoverLetter,
 			Status:             apl.Status,
 			InterviewQuestions: apl.InterviewQuestions,
+			InterviewResponse:  apl.InterviewResponse,
 		}
 		applications = append(applications, &newApl)
 	}
