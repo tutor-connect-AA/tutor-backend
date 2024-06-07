@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"mime/multipart"
 	"net/http"
 
@@ -102,21 +101,10 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var questions string
 
-	body, err := io.ReadAll(r.Body)
+	r.ParseMultipartForm(10 << 20)
 
-	if err != nil {
-		http.Error(w, "Error reading request body: %v", http.StatusInternalServerError)
-		return
-	}
-
-	err = json.Unmarshal(body, &questions)
-	if err != nil {
-		http.Error(w, "Could not unmarshal json", http.StatusInternalServerError)
-		return
-	}
+	questions := r.PostForm.Get("questions")
 
 	applicationId := r.URL.Query().Get("id")
 
@@ -125,7 +113,7 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 		Status:             domain.SHORTLISTED,
 	}
 
-	err = hH.jaS.UpdateApplication(applicationId, *addedQuestions)
+	err := hH.jaS.UpdateApplication(applicationId, *addedQuestions)
 
 	if err != nil {
 		http.Error(w, "Could not shortlist applicant", http.StatusInternalServerError)
@@ -147,20 +135,28 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 
 func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	var videoURL string
 
 	interviewVideoPath := r.Context().Value("interviewVideoPath")
 	interviewVideo := r.Context().Value("interviewVideo")
 
 	if interviewVideo != nil {
-		videoURL, err := utils.UploadToCloudinary(interviewVideo.(multipart.File), interviewVideoPath.(string))
+
+		videoURL, err = utils.UploadToCloudinary(interviewVideo.(multipart.File), interviewVideoPath.(string))
 		fmt.Printf("CLD result is %v  and error is %v ", videoURL, err)
+
 		if err != nil {
 			videoURL = ""
 			fmt.Printf("Error at upload is: %v", err)
 			http.Error(w, "Could not upload interview video", http.StatusInternalServerError)
 			return
 		}
+
 	}
 
 	appId := r.URL.Query().Get("appId")
@@ -169,12 +165,14 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 		InterviewResponse: videoURL,
 	}
 
-	err := hH.jaS.UpdateApplication(appId, *interviewAdded)
+	err = hH.jaS.UpdateApplication(appId, *interviewAdded)
 
 	if err != nil {
 		http.Error(w, "Could not upload interview response", http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println("video url", videoURL)
 
 	res := Response{
 		Success: true,
