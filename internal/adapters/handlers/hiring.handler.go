@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
@@ -82,7 +83,7 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 		Status: domain.HIRED,
 		TxRef:  tx_ref,
 	}
-	err = hH.jaS.UpdateApplicationStatus(app_id, updatedApp)
+	err = hH.jaS.UpdateApplication(app_id, updatedApp)
 	if err != nil {
 		http.Error(w, "Could not update application status", http.StatusInternalServerError)
 		return
@@ -97,4 +98,37 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
 		return
 	}
+}
+
+func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var questions string
+
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		http.Error(w, "Error reading request body: %v", http.StatusInternalServerError)
+		return
+	}
+
+	err = json.Unmarshal(body, &questions)
+	if err != nil {
+		http.Error(w, "Could not unmarshal json", http.StatusInternalServerError)
+		return
+	}
+
+	applicationId := r.URL.Query().Get("id")
+
+	addedQuestions := &domain.JobApplication{
+		InterviewQuestions: questions,
+		Status:             domain.SHORTLISTED,
+	}
+
+	err = hH.jaS.UpdateApplication(applicationId, *addedQuestions)
+
+	if err != nil {
+		http.Error(w, "Could not shortlist applicant", http.StatusInternalServerError)
+		return
+	}
+
 }
