@@ -96,6 +96,7 @@ func main() {
 	mux.HandleFunc("/hiring/hire", hireH.Hire)
 	mux.HandleFunc("/hiring/verifyHire", hireH.VerifyHire)
 	mux.HandleFunc("/hiring/shortlist", hireH.Shortlist)
+	mux.Handle("/hiring/reply", fileUpload.ThenFunc(hireH.SendInterview))
 
 	mux.HandleFunc("/login", authHandler.Login)
 
