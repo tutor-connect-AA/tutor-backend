@@ -56,11 +56,20 @@ func (js *JobApplicationAPI) GetApplicationsByClient(clientId string) ([]*domain
 	return apls, nil
 }
 
-func (js *JobApplicationAPI) UpdateApplicationStatus(applicationId string, updatedApp domain.JobApplication) error {
-	err := js.jar.UpdateApplicationStatusRepo(applicationId, updatedApp)
+func (js *JobApplicationAPI) UpdateApplication(applicationId string, updatedApp domain.JobApplication) error {
+	err := js.jar.UpdateJobApplicationRepo(applicationId, updatedApp)
 	if err != nil {
 		return err
 	}
 	return nil
 
+}
+func (js JobApplicationAPI) GetApplicationsByStatus(jId string, status domain.ApplicationStatus) ([]*domain.JobApplication, error) {
+
+	apls, err := js.jar.GetApplicationsByStatusRepo(jId, status)
+	if err != nil {
+		return nil, err
+	}
+
+	return apls, err
 }

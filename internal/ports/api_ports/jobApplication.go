@@ -8,5 +8,6 @@ type JobApplicationAPIPort interface {
 	GetApplicationsByJob(jId string) ([]*domain.JobApplication, error)
 	GetApplicationsByTutor(tutorId string) ([]*domain.JobApplication, error)
 	GetApplicationsByClient(clientId string) ([]*domain.JobApplication, error)
-	UpdateApplicationStatus(applicationId string, updatedApp domain.JobApplication) error
+	UpdateApplication(applicationId string, updatedApp domain.JobApplication) error
+	GetApplicationsByStatus(jId string, status domain.ApplicationStatus) ([]*domain.JobApplication, error)
 }

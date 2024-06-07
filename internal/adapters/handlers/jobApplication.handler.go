@@ -241,3 +241,45 @@ func (jaH *JobApplicationHandler) ApplicationsByClient(w http.ResponseWriter, r 
 		return
 	}
 }
+
+func (jaH *JobApplicationHandler) GetApplicationByStatus(w http.ResponseWriter, r *http.Request) {
+
+	jobId := r.URL.Query().Get("jobId")
+	status := domain.ApplicationStatus(r.URL.Query().Get("status"))
+
+	apls, err := jaH.jaSer.GetApplicationsByStatus(jobId, status)
+	if err != nil {
+		http.Error(w, "Could not fetch applications by status", http.StatusInternalServerError)
+		return
+	}
+
+	res := Response{
+		Success: true,
+		Data:    "No applications with of this status for the given job.",
+	}
+
+	if len(apls) == 0 {
+		err = utils.WriteJSON(w, http.StatusOK, res, nil)
+		if err != nil {
+			fmt.Printf("Could not encode to json %v", err)
+			http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+	aplList := []domain.JobApplication{}
+
+	for _, apl := range apls {
+		aplList = append(aplList, *apl)
+	}
+	res = Response{
+		Success: true,
+		Data:    aplList,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		return
+	}
+}
