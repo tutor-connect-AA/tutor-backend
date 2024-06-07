@@ -91,6 +91,7 @@ func main() {
 	mux.HandleFunc("/jobApplication/job", jaHandler.ApplicationsByJob)
 	mux.HandleFunc("/jobApplication/tutor", jaHandler.ApplicationsByJob)
 	mux.HandleFunc("/jobApplication/client", jaHandler.ApplicationsByClient)
+	mux.HandleFunc("/jobApplication/byStatus", jaHandler.GetApplicationByStatus)
 
 	mux.HandleFunc("/jobApplication/hire", hireH.Hire)
 	mux.HandleFunc("/jobApplication/verifyHire", hireH.VerifyHire)

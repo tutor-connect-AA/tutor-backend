@@ -10,9 +10,9 @@ const (
 type Role string
 
 const (
-	client Role = "CLIENT"
-	tutor  Role = "TUTOR"
-	admin  Role = "ADMIN"
+	ClientRole Role = "CLIENT"
+	TutorRole  Role = "TUTOR"
+	AdminRole  Role = "ADMIN"
 )
 
 type Education string
@@ -29,6 +29,7 @@ type ApplicationStatus string
 const (
 	PENDING     ApplicationStatus = "PENDING"
 	SHORTLISTED ApplicationStatus = "SHORTLISTED"
+	INTERVIEWED ApplicationStatus = "INTERVIEWED"
 	HIRED       ApplicationStatus = "HIRED"
 )
 
