@@ -104,7 +104,7 @@ func main() {
 	mux.HandleFunc("/jobRequest/single", jrHandler.GetJobRequest)
 	mux.Handle("/jobRequest/updateRequest", protected.ThenFunc(jrHandler.ChangeJobRequestStatus))
 	mux.Handle("/jobRequest/hire", protected.ThenFunc(jrHandler.HireFromRequest))
-	mux.Handle("jobRequest/verifyHire", protected.ThenFunc(jrHandler.VerifyHireFromRequest))
+	mux.HandleFunc("/jobRequest/verifyHire", jrHandler.VerifyHireFromRequest)
 	// mux.HandleFunc("/jobRequest/multiple",jrHandler.)
 
 	mux.HandleFunc("/tutorNotification/single", tNfHandler.GetTutorNotification)
