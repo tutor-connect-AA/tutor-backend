@@ -139,6 +139,19 @@ func (jrH JobRequestHandler) ChangeJobRequestStatus(w http.ResponseWriter, r *ht
 }
 
 func (jrH JobRequestHandler) HireFromRequest(w http.ResponseWriter, r *http.Request) {
+	req_id := r.URL.Query().Get("reqId")
+
+	jReq, err := jrH.jrS.JobRequestById(req_id)
+
+	if err != nil {
+		http.Error(w, "Could not get request", http.StatusInternalServerError)
+		return
+	}
+
+	if jReq.Status != domain.ACCEPTED {
+		http.Error(w, "The tutor has not accepted your job request yet to be hired", http.StatusForbidden)
+		return
+	}
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
@@ -152,7 +165,6 @@ func (jrH JobRequestHandler) HireFromRequest(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	fmt.Print("Client is : ", clientInfo)
-	req_id := r.URL.Query().Get("reqId")
 
 	tx_ref := utils.RandomString(20)
 
