@@ -60,7 +60,7 @@ func main() {
 	authSer := api.NewAuthService(userRepo)
 	authHandler := handlers.NewAuthHandler(authSer, clientSer, tutSer)
 
-	hireH := handlers.NewHiringHandler(jaSer, clientSer)
+	hireH := handlers.NewHiringHandler(jaSer, clientSer, tutSer)
 
 	//JobRequest Application configuration
 	jrRepo := db.NewJobRequestRepo(dbConnection)
