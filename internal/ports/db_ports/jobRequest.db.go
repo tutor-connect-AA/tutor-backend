@@ -6,4 +6,5 @@ type JobRequestDBPort interface {
 	CreateJobRequestRepo(newJob domain.JobRequest) (*domain.JobRequest, error)
 	JobRequestByIdRepo(id string) (*domain.JobRequest, error)
 	JobRequestsRepo() ([]*domain.JobRequest, error)
+	UpdateRequestRepo(requestId string, updatedRequest domain.JobRequest) error
 }
