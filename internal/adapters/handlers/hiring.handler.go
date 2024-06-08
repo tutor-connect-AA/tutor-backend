@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"github.com/tutor-connect-AA/tutor-backend/internal/ports/api_ports"
@@ -12,14 +14,16 @@ import (
 )
 
 type HiringHandler struct {
-	jaS api_ports.JobApplicationAPIPort
-	clS api_ports.ClientAPIPort
+	jaS    api_ports.JobApplicationAPIPort
+	clS    api_ports.ClientAPIPort
+	tutSer api_ports.TutorAPIPort
 }
 
-func NewHiringHandler(jaS api_ports.JobApplicationAPIPort, clS api_ports.ClientAPIPort) *HiringHandler {
+func NewHiringHandler(jaS api_ports.JobApplicationAPIPort, clS api_ports.ClientAPIPort, tutSer api_ports.TutorAPIPort) *HiringHandler {
 	return &HiringHandler{
-		jaS: jaS,
-		clS: clS,
+		jaS:    jaS,
+		clS:    clS,
+		tutSer: tutSer,
 	}
 }
 
@@ -43,7 +47,9 @@ func (hH *HiringHandler) Hire(w http.ResponseWriter, r *http.Request) {
 
 	tx_ref := utils.RandomString(20)
 	return_url := "https://www.google.com"
-	return_url_actual := fmt.Sprintf(`http://localhost:8080/jobApplication/verifyHire?txRef=%v&appId=%v`, tx_ref, app_id) //to be used later when deployed(b.v of verification error in url from Chapa )
+	return_url_actual := fmt.Sprintf(`http://localhost:8080/hiring/verifyHire?txRef=%s&appId=%s`, url.QueryEscape(tx_ref), url.QueryEscape(app_id)) //to be used later when deployed(b.v of verification error in url from Chapa )
+
+	fmt.Println("Actual return url is :", return_url_actual)
 	fmt.Printf("return url at verify hire is: %v", return_url)
 
 	checkoutURL, err := utils.DoPayment("mahider3991@gmail.com", tx_ref, return_url_actual, 100)
@@ -55,12 +61,41 @@ func (hH *HiringHandler) Hire(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Payment redirection failed", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, return_url_actual, http.StatusSeeOther)
+	http.Redirect(w, r, checkoutURL, http.StatusSeeOther)
 }
 
 func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 	tx_ref := r.URL.Query().Get("txRef")
-	app_id := r.URL.Query().Get("appId")
+
+	// app_id := r.URL.Query().Get("appId")
+
+	// fmt.Println("The application id is :", app_id)
+
+	// fmt.Println("Hello good sir!")
+
+	// decodedAppID, err := url.QueryUnescape(app_id)
+	// if err != nil {
+	// 	http.Error(w, "Could not decode application id from url", http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// fmt.Println("tx", tx_ref)
+	// fmt.Println("The decoded application id is", decodedAppID)
+	rawQuery := r.URL.RawQuery
+	fmt.Println("Raw query is:", rawQuery)
+
+	// Replace &amp; with & in the raw query string
+	fixedQuery := strings.ReplaceAll(rawQuery, "&amp;", "&")
+	fmt.Println("Fixed query is:", fixedQuery)
+
+	// Parse the fixed query string
+	params, err := url.ParseQuery(fixedQuery)
+	if err != nil {
+		http.Error(w, "Could not parse query parameters", http.StatusInternalServerError)
+		return
+	}
+
+	app_id := params.Get("appId")
 	verResult, err := utils.VerifyPayment(tx_ref)
 	if err != nil {
 		http.Error(w, "Could not verify payment", http.StatusInternalServerError)
@@ -88,9 +123,26 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not update application status", http.StatusInternalServerError)
 		return
 	}
+
+	appl, err := hH.jaS.GetApplicationById(app_id)
+	if err != nil {
+		http.Error(w, "Could not get application by id", http.StatusInternalServerError)
+		return
+	}
+	applicantId := appl.ApplicantId
+	applicantInfo, err := hH.tutSer.GetTutorById(applicantId)
+	if err != nil {
+		http.Error(w, "Could not get tutor information", http.StatusInternalServerError)
+		return
+	}
+
+	tutorContactInfo := map[string]string{
+		"phoneNumber": applicantInfo.PhoneNumber,
+		"email":       applicantInfo.Email,
+	}
 	res := Response{
 		Success: true,
-		Data:    "Payment successful and tutor hired.",
+		Data:    tutorContactInfo,
 	}
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
