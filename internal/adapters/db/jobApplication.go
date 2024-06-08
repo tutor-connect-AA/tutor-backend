@@ -145,10 +145,7 @@ func (jar JobApplicationRepo) GetApplicationsByClientRepo(cltId string) ([]*doma
 func (jar JobApplicationRepo) UpdateJobApplicationRepo(applicationId string, updatedApp domain.JobApplication) error {
 	res := jar.db.Model(&job_application_table{}).Where("id = ?", applicationId).Updates(updatedApp)
 
-	if res.Error != nil {
-		return res.Error
-	}
-	return nil
+	return res.Error
 }
 func (jar JobApplicationRepo) GetApplicationsByStatusRepo(jId string, status domain.ApplicationStatus) ([]*domain.JobApplication, error) {
 

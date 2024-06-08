@@ -27,12 +27,13 @@ type job_request_table struct {
 	Client_table client_table            `gorm:"foreignKey:ClientId;references:Id"`
 	TutorId      string                  //`gorm:"foreignKey:tutor_table(id)"` // id of the tutor for whom the request is sent
 	Tutor_table  tutor_table             `gorm:"foreignKey:TutorId;references:Id"`
+	TxRef        string                  `gorm:"text"`
 }
 
 func (jrr JobRequestRepo) CreateJobRequestRepo(newJob domain.JobRequest) (*domain.JobRequest, error) {
 	jr := job_request_table{
 		Description: newJob.Description,
-		Status:      newJob.Status,
+		Status:      domain.REQUESTED,
 		ClientId:    newJob.ClientId,
 		TutorId:     newJob.TutorId,
 	}
@@ -57,6 +58,7 @@ func (jrr JobRequestRepo) JobRequestByIdRepo(id string) (*domain.JobRequest, err
 		ClientId:    jr.ClientId,
 		TutorId:     jr.TutorId,
 		CreatedOn:   jr.CreatedAt,
+		TxRef:       jr.TxRef,
 	}, nil
 }
 
@@ -75,10 +77,17 @@ func (jrr JobRequestRepo) JobRequestsRepo() ([]*domain.JobRequest, error) {
 			Status:      request.Status,
 			ClientId:    request.ClientId,
 			TutorId:     request.TutorId,
+			TxRef:       request.TxRef,
 		}
 		requests = append(requests, domainRequest)
 	}
 
 	return requests, nil
 
+}
+
+func (jrr JobRequestRepo) UpdateRequestRepo(requestId string, updatedRequest domain.JobRequest) error {
+	res := jrr.db.Model(&job_request_table{}).Where("id = ?", requestId).Updates(updatedRequest)
+
+	return res.Error
 }

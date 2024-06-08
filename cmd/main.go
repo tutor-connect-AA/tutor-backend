@@ -65,7 +65,7 @@ func main() {
 	//JobRequest Application configuration
 	jrRepo := db.NewJobRequestRepo(dbConnection)
 	jrSer := api.NewJobRequestAPI(jrRepo)
-	jrHandler := handlers.NewJobRequestHandler(jrSer)
+	jrHandler := handlers.NewJobRequestHandler(jrSer, clientSer, tutSer)
 
 	mux := http.NewServeMux()
 
@@ -102,6 +102,9 @@ func main() {
 
 	mux.Handle("/jobRequest/new", protected.ThenFunc(jrHandler.RequestJob))
 	mux.HandleFunc("/jobRequest/single", jrHandler.GetJobRequest)
+	mux.Handle("/jobRequest/updateRequest", protected.ThenFunc(jrHandler.ChangeJobRequestStatus))
+	mux.Handle("/jobRequest/hire", protected.ThenFunc(jrHandler.HireFromRequest))
+	mux.HandleFunc("/jobRequest/verifyHire", jrHandler.VerifyHireFromRequest)
 	// mux.HandleFunc("/jobRequest/multiple",jrHandler.)
 
 	mux.HandleFunc("/tutorNotification/single", tNfHandler.GetTutorNotification)

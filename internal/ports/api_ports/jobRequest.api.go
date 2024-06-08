@@ -6,4 +6,5 @@ type JobRequestAPIPort interface {
 	CreateJobRequest(newJob domain.JobRequest) (*domain.JobRequest, error)
 	JobRequestById(id string) (*domain.JobRequest, error)
 	JobRequests() ([]*domain.JobRequest, error)
+	UpdateJobRequest(requestId string, updatedJob domain.JobRequest) error
 }

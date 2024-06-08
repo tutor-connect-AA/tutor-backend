@@ -36,8 +36,8 @@ const (
 type JobRequestStatus string
 
 const (
-	REQUESTED  JobRequestStatus  = "REQUESTED"
-	INTERESTED ApplicationStatus = "INTERESTED"
-	ACCEPTED   JobRequestStatus  = "ACCEPTED"
-	REJECTED   JobRequestStatus  = "REJECTED"
+	REQUESTED JobRequestStatus = "REQUESTED"
+	ACCEPTED  JobRequestStatus = "ACCEPTED"
+	REJECTED  JobRequestStatus = "REJECTED"
+	PAID      JobRequestStatus = "PAID"
 )

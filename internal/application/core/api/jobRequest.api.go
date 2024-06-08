@@ -38,3 +38,8 @@ func (jrs JobRequestAPI) JobRequests() ([]*domain.JobRequest, error) {
 	}
 	return jrList, err
 }
+
+func (jrs JobRequestAPI) UpdateJobRequest(requestId string, updatedJob domain.JobRequest) error {
+	err := jrs.jrR.UpdateRequestRepo(requestId, updatedJob)
+	return err
+}
