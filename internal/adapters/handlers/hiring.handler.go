@@ -67,20 +67,6 @@ func (hH *HiringHandler) Hire(w http.ResponseWriter, r *http.Request) {
 func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 	tx_ref := r.URL.Query().Get("txRef")
 
-	// app_id := r.URL.Query().Get("appId")
-
-	// fmt.Println("The application id is :", app_id)
-
-	// fmt.Println("Hello good sir!")
-
-	// decodedAppID, err := url.QueryUnescape(app_id)
-	// if err != nil {
-	// 	http.Error(w, "Could not decode application id from url", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// fmt.Println("tx", tx_ref)
-	// fmt.Println("The decoded application id is", decodedAppID)
 	rawQuery := r.URL.RawQuery
 	fmt.Println("Raw query is:", rawQuery)
 
