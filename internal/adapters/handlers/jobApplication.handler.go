@@ -53,7 +53,7 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	newAppLink := fmt.Sprintf("http://localhost:8080//jobApplication/single?id=%v", ja.Id)
+	newAppLink := fmt.Sprintf("http://localhost:8080/jobApplication/single?id=%v", ja.Id)
 	message := fmt.Sprintf("Some one just applied for the job you posted. Click here to view %v", newAppLink)
 
 	job, err := jaH.jobSer.GetJob(r.URL.Query().Get("id"))
@@ -63,11 +63,11 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	newJobAppNotf := &domain.Notification{
+	newJobAppNotf := domain.Notification{
 		Message: message,
 		OwnerId: job.Posted_By,
 	}
-	_, err = jaH.cNtfSer.CreateClientNotification(*newJobAppNotf)
+	_, err = jaH.cNtfSer.CreateClientNotification(newJobAppNotf)
 
 	if err != nil {
 		http.Error(w, "Could not create notification", http.StatusInternalServerError)
@@ -120,8 +120,10 @@ func (jaH *JobApplicationHandler) GetApplicationById(w http.ResponseWriter, r *h
 		"preferredLocation":         applicant.PreferredWorkLocation,
 	}
 	data := map[string]interface{}{
-		"coverLetter": application.CoverLetter,
-		"applicant":   applicantData,
+		"coverLetter":        application.CoverLetter,
+		"interviewQuestions": application.InterviewQuestions,
+		"interviewResponse":  application.InterviewResponse,
+		"applicant":          applicantData,
 	}
 
 	res := Response{

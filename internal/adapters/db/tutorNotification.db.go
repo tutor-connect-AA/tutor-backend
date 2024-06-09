@@ -83,6 +83,40 @@ func (tNotf TutorNotificationRepo) GetTutorNotifications() ([]*domain.Notificati
 	return dTNtfs, nil
 }
 
+func (tNotf TutorNotificationRepo) GetUnopenedTutorNotifications() ([]*domain.Notification, error) {
+	var dTNtfs []*domain.Notification
+
+	var tNtfs []tutor_notification_table
+
+	if err := tNotf.db.Order("created_at DESC").Where("opened = ?", false).Find(&tNtfs).Error; err != nil {
+		return nil, err
+	}
+
+	for _, tNtf := range tNtfs {
+		dNtf := &domain.Notification{
+			Id:        tNtf.Id.String(),
+			Message:   tNtf.Message,
+			OwnerId:   tNtf.OwnerId.String(),
+			Opened:    tNtf.Opened,
+			CreatedAt: tNtf.CreatedAt,
+		}
+
+		dTNtfs = append(dTNtfs, dNtf)
+	}
+	return dTNtfs, nil
+
+}
+
+func (tNotf TutorNotificationRepo) CountUnopenedTutorNotifications() (*int64, error) {
+
+	var count int64
+	if err := tNotf.db.Model(&tutor_notification_table{}).Where("opened = ?", false).Count(&count).Error; err != nil {
+		return nil, err
+	}
+	return &count, nil
+
+}
+
 // CreateTutorNotification(newNotification domain.Notification) (*domain.Notification, error)
 // UpdateTutorNotificationStatus(id string) error
 // GetTutorNotificationById(id string) (*domain.Notification, error)

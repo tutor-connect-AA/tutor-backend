@@ -83,3 +83,37 @@ func (cNotf ClientNotificationRepo) GetClientNotifications() ([]*domain.Notifica
 	}
 	return dCNtfs, nil
 }
+
+func (cNotf ClientNotificationRepo) GetUnopenedClientNotifications() ([]*domain.Notification, error) {
+	var dTNtfs []*domain.Notification
+
+	var tNtfs []client_notification_table
+
+	if err := cNotf.db.Order("created_at DESC").Where("opened = ?", false).Find(&tNtfs).Error; err != nil {
+		return nil, err
+	}
+
+	for _, tNtf := range tNtfs {
+		dNtf := &domain.Notification{
+			Id:        tNtf.Id.String(),
+			Message:   tNtf.Message,
+			OwnerId:   tNtf.OwnerId.String(),
+			Opened:    tNtf.Opened,
+			CreatedAt: tNtf.CreatedAt,
+		}
+
+		dTNtfs = append(dTNtfs, dNtf)
+	}
+	return dTNtfs, nil
+
+}
+
+func (cNotf ClientNotificationRepo) CountUnopenedClientNotifications() (*int64, error) {
+
+	var count int64
+	if err := cNotf.db.Model(&client_notification_table{}).Where("opened = ?", false).Count(&count).Error; err != nil {
+		return nil, err
+	}
+	return &count, nil
+
+}

@@ -7,4 +7,6 @@ type ClientNotificationDBPort interface {
 	UpdateClientNotificationStatus(id string) error
 	GetClientNotificationById(id string) (*domain.Notification, error)
 	GetClientNotifications() ([]*domain.Notification, error)
+	GetUnopenedClientNotifications() ([]*domain.Notification, error)
+	CountUnopenedClientNotifications() (*int64, error)
 }

@@ -7,4 +7,6 @@ type TutorNotificationAPIPort interface {
 	OpenedTutorNotification(id string) error
 	GetTutorNotificationById(id string) (*domain.Notification, error)
 	GetTutorNotifications() ([]*domain.Notification, error)
+	GetUnopenedTutorNotifications() ([]*domain.Notification, error)
+	CountUnopenedTutorNotifications() (*int64, error)
 }

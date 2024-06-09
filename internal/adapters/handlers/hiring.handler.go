@@ -14,16 +14,24 @@ import (
 )
 
 type HiringHandler struct {
-	jaS    api_ports.JobApplicationAPIPort
-	clS    api_ports.ClientAPIPort
-	tutSer api_ports.TutorAPIPort
+	jaS       api_ports.JobApplicationAPIPort
+	clS       api_ports.ClientAPIPort
+	tutSer    api_ports.TutorAPIPort
+	tutNtfSer api_ports.TutorNotificationAPIPort
+	cltNtfSer api_ports.ClientNotificationAPIPort
+	jbSer     api_ports.JobAPIPort
 }
 
-func NewHiringHandler(jaS api_ports.JobApplicationAPIPort, clS api_ports.ClientAPIPort, tutSer api_ports.TutorAPIPort) *HiringHandler {
+func NewHiringHandler(jaS api_ports.JobApplicationAPIPort, clS api_ports.ClientAPIPort,
+	tutSer api_ports.TutorAPIPort, tutNtfSer api_ports.TutorNotificationAPIPort,
+	cltNtfSer api_ports.ClientNotificationAPIPort, jbSer api_ports.JobAPIPort) *HiringHandler {
 	return &HiringHandler{
-		jaS:    jaS,
-		clS:    clS,
-		tutSer: tutSer,
+		jaS:       jaS,
+		clS:       clS,
+		tutSer:    tutSer,
+		tutNtfSer: tutNtfSer,
+		cltNtfSer: cltNtfSer,
+		jbSer:     jbSer,
 	}
 }
 
@@ -95,7 +103,7 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error unmarshalling json", err)
 		return
 	}
-	data := jsonBody["data"]
+	data := jsonBody["data"] //Might want to change this to checking by success rather than data
 	if data == nil {
 		fmt.Fprintf(w, "Payment verification failed")
 		return
@@ -117,6 +125,7 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 	}
 	applicantId := appl.ApplicantId
 	applicantInfo, err := hH.tutSer.GetTutorById(applicantId)
+
 	if err != nil {
 		http.Error(w, "Could not get tutor information", http.StatusInternalServerError)
 		return
@@ -130,6 +139,21 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Data:    tutorContactInfo,
 	}
+
+	link := fmt.Sprintf("http://localhost:8080?jobApplication/single?id=%v", app_id)
+	message := fmt.Sprint("You have been hired.", link)
+
+	hiredNtf := domain.Notification{
+		OwnerId: applicantId,
+		Message: message,
+	}
+
+	_, err = hH.tutNtfSer.CreateTutorNotification(hiredNtf)
+	if err != nil {
+		http.Error(w, "Could not create hiring notification", http.StatusInternalServerError)
+		return
+	}
+
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
@@ -158,6 +182,24 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	appDetail, err := hH.jaS.GetApplicationById(applicationId)
+
+	if err != nil {
+		http.Error(w, "Could not get notification by Id", http.StatusInternalServerError)
+		return
+	}
+
+	ntfLink := fmt.Sprintf("http://localhost:8080/jobApplication/single?id=%v", appDetail.Id)
+	message := fmt.Sprintf("You just got shortlisted for an interview. %v", ntfLink)
+	shortlistedNtf := domain.Notification{
+		OwnerId: appDetail.ApplicantId,
+		Message: message,
+	}
+	_, err = hH.tutNtfSer.CreateTutorNotification(shortlistedNtf)
+	if err != nil {
+		http.Error(w, "Could not create shortlist notification for tutor", http.StatusInternalServerError)
+		return
+	}
 	res := Response{
 		Success: true,
 		Data:    "Applicant successfully shortlisted",
@@ -172,6 +214,8 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
+
+	appId := r.URL.Query().Get("appId")
 
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
@@ -197,19 +241,50 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	appId := r.URL.Query().Get("appId")
-
-	interviewAdded := &domain.JobApplication{
+	interviewAdded := domain.JobApplication{
 		InterviewResponse: videoURL,
 	}
 
-	err = hH.jaS.UpdateApplication(appId, *interviewAdded)
+	err = hH.jaS.UpdateApplication(appId, interviewAdded)
 
 	if err != nil {
 		http.Error(w, "Could not upload interview response", http.StatusInternalServerError)
 		return
 	}
+	// -------------------------------------------------------------------------------------------------------------
+	// The purpose of the code below is to get the id of the client who posted the job.
+	// It is messy, since hiring handler not depends on a lot of other services.
+	// Is there a better way to go about this?
 
+	appDetail, err := hH.jaS.GetApplicationById(appId)
+	if err != nil {
+		http.Error(w, "Could not get application by id", http.StatusInternalServerError)
+		return
+	}
+	fmt.Println("the job id is :", appDetail.JobId)
+	fmt.Println("the app id is :", appDetail.Id)
+	fmt.Print("\n The whole app is : ", appDetail)
+	jobDetail, err := hH.jbSer.GetJob(appDetail.JobId)
+	if err != nil {
+		http.Error(w, "Could not get job by id", http.StatusInternalServerError)
+		return
+	}
+
+	link := fmt.Sprintf("http://localhost:8080/jobApplication/single?id=%v", appId)
+	message := fmt.Sprintf("A shortlisted applicant just replied for an interview. %v", link)
+
+	//------------------------------------------------------------------------------------------------------------------
+
+	interviewResponse := domain.Notification{
+		OwnerId: jobDetail.Posted_By,
+		Message: message,
+	}
+
+	_, err = hH.cltNtfSer.CreateClientNotification(interviewResponse)
+	if err != nil {
+		http.Error(w, "Could not create notification for interview response", http.StatusInternalServerError)
+		return
+	}
 	fmt.Println("video url", videoURL)
 
 	res := Response{
