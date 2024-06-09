@@ -60,12 +60,12 @@ func (cNotf ClientNotificationRepo) GetClientNotificationById(id string) (*domai
 	}, nil
 }
 
-func (cNotf ClientNotificationRepo) GetClientNotifications() ([]*domain.Notification, error) {
+func (cNotf ClientNotificationRepo) GetClientNotifications(ownerId string) ([]*domain.Notification, error) {
 	var dCNtfs []*domain.Notification
 
 	var cNtfs []client_notification_table
 
-	res := cNotf.db.Order("created_at DESC").Find(&cNtfs)
+	res := cNotf.db.Order("created_at DESC").Where("owner_id = ?", ownerId).Find(&cNtfs)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -84,15 +84,16 @@ func (cNotf ClientNotificationRepo) GetClientNotifications() ([]*domain.Notifica
 	return dCNtfs, nil
 }
 
-func (cNotf ClientNotificationRepo) GetUnopenedClientNotifications() ([]*domain.Notification, error) {
+func (cNotf ClientNotificationRepo) GetUnopenedClientNotifications(ownerId string) ([]*domain.Notification, error) {
 	var dTNtfs []*domain.Notification
 
 	var tNtfs []client_notification_table
 
-	if err := cNotf.db.Order("created_at DESC").Where("opened = ?", false).Find(&tNtfs).Error; err != nil {
+	if err := cNotf.db.Order("created_at DESC").Where("opened = ?", false).
+		Where("owner_id = ?", ownerId).
+		Find(&tNtfs).Error; err != nil {
 		return nil, err
 	}
-
 	for _, tNtf := range tNtfs {
 		dNtf := &domain.Notification{
 			Id:        tNtf.Id.String(),
@@ -108,10 +109,14 @@ func (cNotf ClientNotificationRepo) GetUnopenedClientNotifications() ([]*domain.
 
 }
 
-func (cNotf ClientNotificationRepo) CountUnopenedClientNotifications() (*int64, error) {
+func (cNotf ClientNotificationRepo) CountUnopenedClientNotifications(ownerId string) (*int64, error) {
 
 	var count int64
-	if err := cNotf.db.Model(&client_notification_table{}).Where("opened = ?", false).Count(&count).Error; err != nil {
+	if err := cNotf.db.Model(&client_notification_table{}).
+		Where("owner_id = ?", ownerId).
+		Where("opened = ?", false).
+		Count(&count).Error; err != nil {
+
 		return nil, err
 	}
 	return &count, nil

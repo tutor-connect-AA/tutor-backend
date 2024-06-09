@@ -25,6 +25,17 @@ func (tNH TutorNotificationHandler) GetTutorNotification(w http.ResponseWriter, 
 		return
 	}
 
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	if ntf.OwnerId != payload["id"] {
+		http.Error(w, "Not allowed to access this notification", http.StatusForbidden)
+		return
+	}
+
 	err = tNH.tutorNotfService.OpenedTutorNotification(ntfId) //changes the notification status to opened
 	if err != nil {
 		http.Error(w, "Could not change the status of notification to opened", http.StatusInternalServerError)
@@ -44,7 +55,14 @@ func (tNH TutorNotificationHandler) GetTutorNotification(w http.ResponseWriter, 
 }
 
 func (tNH TutorNotificationHandler) GetTutorNotifications(w http.ResponseWriter, r *http.Request) {
-	ntfs, err := tNH.tutorNotfService.GetTutorNotifications()
+
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	ntfs, err := tNH.tutorNotfService.GetTutorNotifications(payload["id"])
 
 	if err != nil {
 		http.Error(w, "Could not get notifications", http.StatusInternalServerError)
@@ -64,7 +82,15 @@ func (tNH TutorNotificationHandler) GetTutorNotifications(w http.ResponseWriter,
 }
 
 func (tNH TutorNotificationHandler) UnopenedTutorNtfs(w http.ResponseWriter, r *http.Request) {
-	ntfs, err := tNH.tutorNotfService.GetUnopenedTutorNotifications()
+
+	payload, err := utils.GetPayload(r)
+
+	if err != nil {
+		http.Error(w, "could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	ntfs, err := tNH.tutorNotfService.GetUnopenedTutorNotifications(payload["id"])
 	if err != nil {
 		http.Error(w, "Could not get unopened notifications", http.StatusInternalServerError)
 		return
@@ -83,7 +109,14 @@ func (tNH TutorNotificationHandler) UnopenedTutorNtfs(w http.ResponseWriter, r *
 }
 
 func (tNH TutorNotificationHandler) CountUnopenedTutorNtfs(w http.ResponseWriter, r *http.Request) {
-	count, err := tNH.tutorNotfService.CountUnopenedTutorNotifications()
+
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	count, err := tNH.tutorNotfService.CountUnopenedTutorNotifications(payload["id"])
 
 	if err != nil {
 		http.Error(w, "Could not get unopened notifications count", http.StatusInternalServerError)

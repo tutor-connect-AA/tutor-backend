@@ -35,25 +35,25 @@ func (cnR ClientNotificationAPI) GetClientNotificationById(id string) (*domain.N
 	}
 	return cntf, nil
 }
-func (cnR ClientNotificationAPI) GetClientNotifications() ([]*domain.Notification, error) {
-	cNtfs, err := cnR.clientNotificationRepo.GetClientNotifications()
+func (cnR ClientNotificationAPI) GetClientNotifications(ownerId string) ([]*domain.Notification, error) {
+	cNtfs, err := cnR.clientNotificationRepo.GetClientNotifications(ownerId)
 	if err != nil {
 		return nil, err
 	}
 	return cNtfs, nil
 }
 
-func (cnR ClientNotificationAPI) GetUnopenedClientNotifications() ([]*domain.Notification, error) {
-	tNtfs, err := cnR.clientNotificationRepo.GetUnopenedClientNotifications()
+func (cnR ClientNotificationAPI) GetUnopenedClientNotifications(ownerId string) ([]*domain.Notification, error) {
+	tNtfs, err := cnR.clientNotificationRepo.GetUnopenedClientNotifications(ownerId)
 	if err != nil {
 		return nil, err
 	}
 	return tNtfs, nil
 }
 
-func (cnR ClientNotificationAPI) CountUnopenedClientNotifications() (*int64, error) {
+func (cnR ClientNotificationAPI) CountUnopenedClientNotifications(ownerId string) (*int64, error) {
 
-	count, err := cnR.clientNotificationRepo.CountUnopenedClientNotifications()
+	count, err := cnR.clientNotificationRepo.CountUnopenedClientNotifications(ownerId)
 
 	if err != nil {
 		return nil, err

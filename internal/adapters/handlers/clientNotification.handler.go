@@ -25,6 +25,17 @@ func (cNH *ClientNotificationHandler) GetClientNotification(w http.ResponseWrite
 		return
 	}
 
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	if ntf.OwnerId != payload["id"] {
+		http.Error(w, "Not allowed to access this notification", http.StatusForbidden)
+		return
+	}
+
 	err = cNH.clientNotfService.OpenedClientNotification(ntfId) //changes the notification status to opened
 	if err != nil {
 		http.Error(w, "Could not change the status of notification to opened", http.StatusInternalServerError)
@@ -44,7 +55,13 @@ func (cNH *ClientNotificationHandler) GetClientNotification(w http.ResponseWrite
 }
 
 func (cNH ClientNotificationHandler) GetClientNotifications(w http.ResponseWriter, r *http.Request) {
-	ntfs, err := cNH.clientNotfService.GetClientNotifications()
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	ntfs, err := cNH.clientNotfService.GetClientNotifications(payload["id"])
 
 	if err != nil {
 		http.Error(w, "Could not get notifications", http.StatusInternalServerError)
@@ -64,7 +81,14 @@ func (cNH ClientNotificationHandler) GetClientNotifications(w http.ResponseWrite
 }
 
 func (cNH ClientNotificationHandler) UnopenedClientNtfs(w http.ResponseWriter, r *http.Request) {
-	ntfs, err := cNH.clientNotfService.GetUnopenedClientNotifications()
+
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	ntfs, err := cNH.clientNotfService.GetUnopenedClientNotifications(payload["id"])
 	if err != nil {
 		http.Error(w, "Could not get unopened notifications", http.StatusInternalServerError)
 		return
@@ -83,7 +107,12 @@ func (cNH ClientNotificationHandler) UnopenedClientNtfs(w http.ResponseWriter, r
 }
 
 func (cNH ClientNotificationHandler) CountUnopenedClientNtfs(w http.ResponseWriter, r *http.Request) {
-	count, err := cNH.clientNotfService.CountUnopenedClientNotifications()
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		return
+	}
+	count, err := cNH.clientNotfService.CountUnopenedClientNotifications(payload["id"])
 
 	if err != nil {
 		http.Error(w, "Could not get unopened notifications count", http.StatusInternalServerError)
