@@ -34,25 +34,25 @@ func (tnR TutorNotificationAPI) GetTutorNotificationById(id string) (*domain.Not
 	}
 	return tntf, nil
 }
-func (tnR TutorNotificationAPI) GetTutorNotifications() ([]*domain.Notification, error) {
-	tNtfs, err := tnR.tutorNotificationRepo.GetTutorNotifications()
+func (tnR TutorNotificationAPI) GetTutorNotifications(ownerId string) ([]*domain.Notification, error) {
+	tNtfs, err := tnR.tutorNotificationRepo.GetTutorNotifications(ownerId)
 	if err != nil {
 		return nil, err
 	}
 	return tNtfs, nil
 }
 
-func (tnR TutorNotificationAPI) GetUnopenedTutorNotifications() ([]*domain.Notification, error) {
-	tNtfs, err := tnR.tutorNotificationRepo.GetTutorNotifications()
+func (tnR TutorNotificationAPI) GetUnopenedTutorNotifications(ownerId string) ([]*domain.Notification, error) {
+	tNtfs, err := tnR.tutorNotificationRepo.GetUnopenedTutorNotifications(ownerId)
 	if err != nil {
 		return nil, err
 	}
 	return tNtfs, nil
 }
 
-func (tnR TutorNotificationAPI) CountUnopenedTutorNotifications() (*int64, error) {
+func (tnR TutorNotificationAPI) CountUnopenedTutorNotifications(ownerId string) (*int64, error) {
 
-	count, err := tnR.tutorNotificationRepo.CountUnopenedTutorNotifications()
+	count, err := tnR.tutorNotificationRepo.CountUnopenedTutorNotifications(ownerId)
 
 	if err != nil {
 		return nil, err

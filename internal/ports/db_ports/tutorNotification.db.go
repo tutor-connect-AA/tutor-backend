@@ -6,7 +6,7 @@ type TutorNotificationDBPort interface {
 	CreateTutorNotification(newNotification domain.Notification) (*domain.Notification, error)
 	UpdateTutorNotificationStatus(id string) error
 	GetTutorNotificationById(id string) (*domain.Notification, error)
-	GetTutorNotifications() ([]*domain.Notification, error)
-	GetUnopenedTutorNotifications() ([]*domain.Notification, error)
-	CountUnopenedTutorNotifications() (*int64, error)
+	GetTutorNotifications(ownerId string) ([]*domain.Notification, error)
+	GetUnopenedTutorNotifications(ownerId string) ([]*domain.Notification, error)
+	CountUnopenedTutorNotifications(ownerId string) (*int64, error)
 }

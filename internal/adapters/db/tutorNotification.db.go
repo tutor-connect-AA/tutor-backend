@@ -59,12 +59,12 @@ func (tNotf TutorNotificationRepo) GetTutorNotificationById(id string) (*domain.
 	}, nil
 
 }
-func (tNotf TutorNotificationRepo) GetTutorNotifications() ([]*domain.Notification, error) {
+func (tNotf TutorNotificationRepo) GetTutorNotifications(ownerId string) ([]*domain.Notification, error) {
 	var dTNtfs []*domain.Notification
 
 	var tNtfs []tutor_notification_table
 
-	res := tNotf.db.Order("created_at DESC").Find(&tNtfs)
+	res := tNotf.db.Order("created_at DESC").Where("owner_id = ?", ownerId).Find(&tNtfs)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -83,12 +83,14 @@ func (tNotf TutorNotificationRepo) GetTutorNotifications() ([]*domain.Notificati
 	return dTNtfs, nil
 }
 
-func (tNotf TutorNotificationRepo) GetUnopenedTutorNotifications() ([]*domain.Notification, error) {
+func (tNotf TutorNotificationRepo) GetUnopenedTutorNotifications(ownerId string) ([]*domain.Notification, error) {
 	var dTNtfs []*domain.Notification
 
 	var tNtfs []tutor_notification_table
 
-	if err := tNotf.db.Order("created_at DESC").Where("opened = ?", false).Find(&tNtfs).Error; err != nil {
+	if err := tNotf.db.Order("created_at DESC").Where("opened = ?", false).
+		Where("owner_id = ?", ownerId).
+		Find(&tNtfs).Error; err != nil {
 		return nil, err
 	}
 
@@ -107,10 +109,14 @@ func (tNotf TutorNotificationRepo) GetUnopenedTutorNotifications() ([]*domain.No
 
 }
 
-func (tNotf TutorNotificationRepo) CountUnopenedTutorNotifications() (*int64, error) {
+func (tNotf TutorNotificationRepo) CountUnopenedTutorNotifications(ownerId string) (*int64, error) {
 
 	var count int64
-	if err := tNotf.db.Model(&tutor_notification_table{}).Where("opened = ?", false).Count(&count).Error; err != nil {
+	if err := tNotf.db.Model(&tutor_notification_table{}).
+		Where("owner_id = ?", ownerId).
+		Where("opened = ?", false).
+		Count(&count).Error; err != nil {
+
 		return nil, err
 	}
 	return &count, nil

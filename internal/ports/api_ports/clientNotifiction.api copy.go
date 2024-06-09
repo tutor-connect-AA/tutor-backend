@@ -6,7 +6,7 @@ type ClientNotificationAPIPort interface {
 	CreateClientNotification(newNotification domain.Notification) (*domain.Notification, error)
 	OpenedClientNotification(id string) error
 	GetClientNotificationById(id string) (*domain.Notification, error)
-	GetClientNotifications() ([]*domain.Notification, error)
-	GetUnopenedClientNotifications() ([]*domain.Notification, error)
-	CountUnopenedClientNotifications() (*int64, error)
+	GetClientNotifications(ownerId string) ([]*domain.Notification, error)
+	GetUnopenedClientNotifications(ownerId string) ([]*domain.Notification, error)
+	CountUnopenedClientNotifications(ownerId string) (*int64, error)
 }

@@ -108,14 +108,14 @@ func main() {
 	// mux.HandleFunc("/jobRequest/multiple",jrHandler.)
 
 	mux.HandleFunc("/tutorNotification/single", tNfHandler.GetTutorNotification)
-	mux.HandleFunc("/tutorNotifications", tNfHandler.GetTutorNotifications)
-	mux.HandleFunc("/tutorNotifications/unopened", tNfHandler.UnopenedTutorNtfs)
-	mux.HandleFunc("/tutorNotifications/count", tNfHandler.CountUnopenedTutorNtfs)
+	mux.Handle("/tutorNotifications", protected.ThenFunc(tNfHandler.GetTutorNotifications))
+	mux.Handle("/tutorNotifications/unopened", protected.ThenFunc(tNfHandler.UnopenedTutorNtfs))
+	mux.Handle("/tutorNotifications/count", protected.ThenFunc(tNfHandler.CountUnopenedTutorNtfs))
 
 	mux.HandleFunc("/clientNotification/single", cNfHandler.GetClientNotification)
-	mux.HandleFunc("/clientNotifications", cNfHandler.GetClientNotifications)
-	mux.HandleFunc("/clientNotifications/unopened", cNfHandler.UnopenedClientNtfs)
-	mux.HandleFunc("/clientNotifications/count", cNfHandler.CountUnopenedClientNtfs)
+	mux.Handle("/clientNotifications", protected.ThenFunc(cNfHandler.GetClientNotifications))
+	mux.Handle("/clientNotifications/unopened", protected.ThenFunc(cNfHandler.UnopenedClientNtfs))
+	mux.Handle("/clientNotifications/count", protected.ThenFunc(cNfHandler.CountUnopenedClientNtfs))
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)
