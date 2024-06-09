@@ -60,7 +60,7 @@ func main() {
 	authSer := api.NewAuthService(userRepo)
 	authHandler := handlers.NewAuthHandler(authSer, clientSer, tutSer)
 
-	hireH := handlers.NewHiringHandler(jaSer, clientSer, tutSer)
+	hireH := handlers.NewHiringHandler(jaSer, clientSer, tutSer, tNtfSer, cNtfSer, jobSer)
 
 	//JobRequest Application configuration
 	jrRepo := db.NewJobRequestRepo(dbConnection)
@@ -109,9 +109,13 @@ func main() {
 
 	mux.HandleFunc("/tutorNotification/single", tNfHandler.GetTutorNotification)
 	mux.HandleFunc("/tutorNotifications", tNfHandler.GetTutorNotifications)
+	mux.HandleFunc("/tutorNotifications/unopened", tNfHandler.UnopenedTutorNtfs)
+	mux.HandleFunc("/tutorNotifications/count", tNfHandler.CountUnopenedTutorNtfs)
 
 	mux.HandleFunc("/clientNotification/single", cNfHandler.GetClientNotification)
 	mux.HandleFunc("/clientNotifications", cNfHandler.GetClientNotifications)
+	mux.HandleFunc("/clientNotifications/unopened", cNfHandler.UnopenedClientNtfs)
+	mux.HandleFunc("/clientNotifications/count", cNfHandler.CountUnopenedClientNtfs)
 
 	log.Println("Listening on port 8080")
 	http.ListenAndServe(":8080", mux)

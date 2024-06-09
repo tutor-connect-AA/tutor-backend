@@ -41,3 +41,21 @@ func (tnR TutorNotificationAPI) GetTutorNotifications() ([]*domain.Notification,
 	}
 	return tNtfs, nil
 }
+
+func (tnR TutorNotificationAPI) GetUnopenedTutorNotifications() ([]*domain.Notification, error) {
+	tNtfs, err := tnR.tutorNotificationRepo.GetTutorNotifications()
+	if err != nil {
+		return nil, err
+	}
+	return tNtfs, nil
+}
+
+func (tnR TutorNotificationAPI) CountUnopenedTutorNotifications() (*int64, error) {
+
+	count, err := tnR.tutorNotificationRepo.CountUnopenedTutorNotifications()
+
+	if err != nil {
+		return nil, err
+	}
+	return count, nil
+}

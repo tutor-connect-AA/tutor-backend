@@ -52,14 +52,14 @@ func (jar JobApplicationRepo) CreateApplicationRepo(apl domain.JobApplication) (
 }
 func (jar JobApplicationRepo) GetApplicationByIdRepo(id string) (*domain.JobApplication, error) {
 	var application job_application_table
-	res := jar.db.Where("id = ?", id).First(&application)
+	res := jar.db.Where("id =?", id).First(&application)
 
 	if res.Error != nil {
 		return nil, res.Error
 	}
 	return &domain.JobApplication{
 		Id:                 application.Id.String(),
-		JobId:              application.ApplicantId,
+		JobId:              application.JobId,
 		ApplicantId:        application.ApplicantId,
 		CoverLetter:        application.CoverLetter,
 		Status:             application.Status,

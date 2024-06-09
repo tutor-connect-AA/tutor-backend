@@ -43,5 +43,23 @@ func (cnR ClientNotificationAPI) GetClientNotifications() ([]*domain.Notificatio
 	return cNtfs, nil
 }
 
+func (cnR ClientNotificationAPI) GetUnopenedClientNotifications() ([]*domain.Notification, error) {
+	tNtfs, err := cnR.clientNotificationRepo.GetUnopenedClientNotifications()
+	if err != nil {
+		return nil, err
+	}
+	return tNtfs, nil
+}
+
+func (cnR ClientNotificationAPI) CountUnopenedClientNotifications() (*int64, error) {
+
+	count, err := cnR.clientNotificationRepo.CountUnopenedClientNotifications()
+
+	if err != nil {
+		return nil, err
+	}
+	return count, nil
+}
+
 // CreateClientNotification(newNotification domain.Notification) (*domain.Notification, error)
 // OpenedClientNotification(id string) error

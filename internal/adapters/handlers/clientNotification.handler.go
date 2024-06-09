@@ -62,3 +62,41 @@ func (cNH ClientNotificationHandler) GetClientNotifications(w http.ResponseWrite
 		return
 	}
 }
+
+func (cNH ClientNotificationHandler) UnopenedClientNtfs(w http.ResponseWriter, r *http.Request) {
+	ntfs, err := cNH.clientNotfService.GetUnopenedClientNotifications()
+	if err != nil {
+		http.Error(w, "Could not get unopened notifications", http.StatusInternalServerError)
+		return
+	}
+
+	res := Response{
+		Success: true,
+		Data:    ntfs,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (cNH ClientNotificationHandler) CountUnopenedClientNtfs(w http.ResponseWriter, r *http.Request) {
+	count, err := cNH.clientNotfService.CountUnopenedClientNotifications()
+
+	if err != nil {
+		http.Error(w, "Could not get unopened notifications count", http.StatusInternalServerError)
+		return
+	}
+	res := Response{
+		Success: true,
+		Data:    count,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		return
+	}
+
+}
