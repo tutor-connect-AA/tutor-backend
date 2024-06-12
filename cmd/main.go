@@ -15,17 +15,26 @@ import (
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/api"
 )
 
+func init() {
+	// Load environment variables from .env file if it exists
+	if _, err := os.Stat(".env"); err == nil {
+		if err := godotenv.Load(".env"); err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	}
+}
+
 func main() {
 
 	//Login endpoint should be shared by tutor and client?
 
-	err := godotenv.Load(".env")
+	// err := godotenv.Load(".env")
 
-	if err != nil {
-		log.Fatal("Could not access dotenv variables")
-		log.Print(err)
-		return
-	}
+	// if err != nil {
+	// 	log.Fatal("Could not access dotenv variables")
+	// 	log.Print(err)
+	// 	return
+	// }
 
 	dbString := os.Getenv("DB_URL")
 	fmt.Println("DB STRING : ", dbString)
