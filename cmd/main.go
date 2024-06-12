@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"os"
 
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/justinas/alice"
 	"github.com/tutor-connect-AA/tutor-backend/internal/adapters/db"
 	"github.com/tutor-connect-AA/tutor-backend/internal/adapters/handlers"
@@ -16,7 +19,25 @@ func main() {
 
 	//Login endpoint should be shared by tutor and client?
 
-	var dsn = flag.String("dsn", "postgres://postgres:Maverick2020!@localhost:5432/tutor-connect", "Connection string to database")
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatal("Could not access dotenv variables")
+		return
+	}
+
+	dbString := os.Getenv("DB_URL")
+	fmt.Println("DB STRING : ", dbString)
+
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "8080"
+	}
+
+	fmt.Println("db string is :", dbString)
+
+	var dsn = flag.String("dsn", dbString, "Connection string to database")
 	dbConnection, err := db.ConnectDB(*dsn)
 
 	if err != nil {
@@ -117,7 +138,7 @@ func main() {
 	mux.Handle("/client-notifications/unopened", protected.ThenFunc(cNfHandler.UnopenedClientNtfs))
 	mux.Handle("/client-notifications/count", protected.ThenFunc(cNfHandler.CountUnopenedClientNtfs))
 
-	log.Println("Listening on port 8080")
-	http.ListenAndServe(":8080", mux)
+	log.Println("Listening on port:", port)
+	http.ListenAndServe(":"+port, mux)
 
 }
