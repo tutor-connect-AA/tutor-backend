@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      # - "8080:8080"
+      - "${PORT}:${PORT}"
+    depends_on:
+      - db
+    environment:
+      - DB_CONN=postgres://postgres:password@db:5433/tutor-connect
+      # - PORT=8080
+      - PORT=${PORT}
+
+    volumes:
+      - ./cmd:/app/cmd
+      - ./config:/app/config
+      - ./internal:/app/internal
+      - ./go.mod:/app/go.mod
+      - ./go.sum:/app/go.sum
+      - ./README.md:/app/README.md
+    env_file:
+      - .env
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tutor-connect
+    ports:
+      - "5433:5432"
+    volumes:
+      # - /docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - postgres_data2:/var/lib/postgresql/data
+
+volumes:
+  postgres_data2:
+
+
+# version: '3.8'
+
+# services:
+#   postgres:
+#     image: postgres:latest
+#     restart: always
+#     environment:
+#       POSTGRES_DB: tutor-connect
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: password
+#     ports:
+#       - "5433:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+
+#   app:
+#     build: .
+#     restart: always
+#     ports:
+#       - "8080:8080"
+#     environment:
+#       DATABASE_URL: ${DB_CONN}
+#     depends_on:
+#       - postgres
+
+# volumes:
+#   postgres_data:
+
