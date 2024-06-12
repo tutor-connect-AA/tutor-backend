@@ -23,6 +23,7 @@ func main() {
 
 	if err != nil {
 		log.Fatal("Could not access dotenv variables")
+		log.Print(err)
 		return
 	}
 
