@@ -30,7 +30,7 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(10 << 20) // 10 MB max size
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Could not parse form : "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -48,7 +48,7 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 	clt, err := adp.ser.RegisterClient(newClient)
 
 	if err != nil {
-		http.Error(w, "Could not register client", http.StatusInternalServerError)
+		http.Error(w, "Could not register client : "+err.Error(), http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
@@ -61,7 +61,7 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 
 	if err != nil {
-		http.Error(w, "Could not send json", http.StatusInternalServerError)
+		http.Error(w, "Could not send json : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -85,7 +85,7 @@ func (adp ClientAdapter) GetClientById(w http.ResponseWriter, r *http.Request) {
 	}
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not send json", http.StatusInternalServerError)
+		http.Error(w, "Could not send json : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -107,7 +107,7 @@ func (adp ClientAdapter) GetListOfClients(w http.ResponseWriter, r *http.Request
 	}
 	err = utils.WriteJSON(w, http.StatusOK, cltList, nil)
 	if err != nil {
-		http.Error(w, "Could not send json", http.StatusInternalServerError)
+		http.Error(w, "Could not send json : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// fmt.Fprintf(w, "Here are all the clients, %v", clts)
@@ -132,12 +132,12 @@ func (adp ClientAdapter) UpdateClientProfile(w http.ResponseWriter, r *http.Requ
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not update profile", http.StatusInternalServerError)
+		http.Error(w, "Could not update profile :"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if clientId != payload["id"] {
-		http.Error(w, "Not allowed to update this profile", http.StatusForbidden)
+		http.Error(w, "Not allowed to update this profile : "+err.Error(), http.StatusForbidden)
 		return
 	}
 

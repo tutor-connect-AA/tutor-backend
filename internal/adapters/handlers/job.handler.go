@@ -33,13 +33,13 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(10 << 20) // 10 MB max size
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Could not parse form : "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	payload, err := utils.GetPayload(r)
 
 	if err != nil {
-		http.Error(w, "Could not get payload form token", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload form token ", http.StatusInternalServerError)
 		return
 	}
 
@@ -66,13 +66,13 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 	dl, err := time.Parse("2006-01-02", r.PostForm.Get("deadline"))
 	if err != nil {
 		fmt.Printf("Could not parse deadline %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Could not parse deadline : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	qt, err := strconv.Atoi(r.PostForm.Get("quantity"))
 	if err != nil {
 		fmt.Printf("Could not convert string to int %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Could not convert string to int for quantity: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	grades := r.PostForm["grades"]
@@ -98,7 +98,7 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 	mi, err := strconv.Atoi(min)
 	if err != nil {
 		fmt.Printf("Could not convert string to int %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Could not convert string to int for min: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -106,14 +106,14 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 	ma, err := strconv.Atoi(max)
 	if err != nil {
 		fmt.Printf("Could not convert string to int %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Could not convert string to int for max : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	ch := r.PostForm.Get("contact")
 	chr, err := strconv.Atoi(ch)
 	if err != nil {
 		fmt.Printf("Could not convert string to int %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Could not convert string to int for contact : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -145,7 +145,7 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// fmt.Fprintf(w, "Created job : %v", jb)
@@ -158,7 +158,7 @@ func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		fmt.Printf("Error at get jobById handler %v", err)
-		http.Error(w, "Could not get a job by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get a job by id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	res := Response{
@@ -168,7 +168,7 @@ func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not get a job by id %v", err)
-		http.Error(w, "Could not get a job by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get a job by id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// fmt.Fprintf(w, "Got job successfully %v", jb)
@@ -189,7 +189,7 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 
 	pageNumber, err := strconv.Atoi(p)
 	if err != nil {
-		http.Error(w, `Could not get a list of jobs`, http.StatusInternalServerError)
+		http.Error(w, `Could not get a list of jobs : `+err.Error(), http.StatusInternalServerError)
 		fmt.Printf("Could not convert string to int %v", err)
 		return
 	}
@@ -205,7 +205,7 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		fmt.Printf("Error at getting list of jobs %v", err)
-		http.Error(w, "Could not get a list of jobs", http.StatusInternalServerError)
+		http.Error(w, "Could not get a list of  : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -216,7 +216,7 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not get a list of jobs %v", err)
-		http.Error(w, "Could not get a list of jobs", http.StatusInternalServerError)
+		http.Error(w, "Could not get a list of jobs : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

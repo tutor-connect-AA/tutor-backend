@@ -35,7 +35,7 @@ func (jrH JobRequestHandler) RequestJob(w http.ResponseWriter, r *http.Request) 
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Unable to create a job request", http.StatusInternalServerError)
+		http.Error(w, "Unable to create a job request : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	clientId := payload["id"]
@@ -57,7 +57,7 @@ func (jrH JobRequestHandler) RequestJob(w http.ResponseWriter, r *http.Request) 
 	jr, err := jrH.jrS.CreateJobRequest(newRequest)
 
 	if err != nil {
-		http.Error(w, "Could not create job request", http.StatusInternalServerError)
+		http.Error(w, "Could not create job request : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := Response{
@@ -66,7 +66,7 @@ func (jrH JobRequestHandler) RequestJob(w http.ResponseWriter, r *http.Request) 
 	}
 	err = utils.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to json", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to json : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -75,7 +75,7 @@ func (jrH JobRequestHandler) GetJobRequest(w http.ResponseWriter, r *http.Reques
 	id := r.URL.Query().Get("id")
 	jr, err := jrH.jrS.JobRequestById(id)
 	if err != nil {
-		http.Error(w, "Could not get job request by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get job request by id :"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	data := Response{
@@ -84,7 +84,7 @@ func (jrH JobRequestHandler) GetJobRequest(w http.ResponseWriter, r *http.Reques
 	}
 	err = utils.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
-		http.Error(w, "Could not encode to json", http.StatusInternalServerError)
+		http.Error(w, "Could not encode to json : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -99,19 +99,19 @@ func (jrH JobRequestHandler) ChangeJobRequestStatus(w http.ResponseWriter, r *ht
 	jr, err := jrH.jrS.JobRequestById(jrId)
 
 	if err != nil {
-		http.Error(w, "Could not update job request status", http.StatusInternalServerError)
+		http.Error(w, "Could not update job request status : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	payload, err := utils.GetPayload(r)
 
 	if err != nil {
-		http.Error(w, "Could not update job request status", http.StatusInternalServerError)
+		http.Error(w, "Could not update job request status : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if payload["id"] != jr.TutorId {
-		http.Error(w, "Not allowed to make this change", http.StatusForbidden)
+		http.Error(w, "Not allowed to make this change : "+err.Error(), http.StatusForbidden)
 		return
 	}
 	updatedJR := domain.JobRequest{
@@ -120,7 +120,7 @@ func (jrH JobRequestHandler) ChangeJobRequestStatus(w http.ResponseWriter, r *ht
 	err = jrH.jrS.UpdateJobRequest(jrId, updatedJR)
 
 	if err != nil {
-		http.Error(w, "Could not update job request status", http.StatusInternalServerError)
+		http.Error(w, "Could not update job request status : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -144,24 +144,24 @@ func (jrH JobRequestHandler) HireFromRequest(w http.ResponseWriter, r *http.Requ
 	jReq, err := jrH.jrS.JobRequestById(req_id)
 
 	if err != nil {
-		http.Error(w, "Could not get request", http.StatusInternalServerError)
+		http.Error(w, "Could not get request : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if jReq.Status != domain.ACCEPTED {
-		http.Error(w, "The tutor has not accepted your job request yet to be hired", http.StatusForbidden)
+		http.Error(w, "The tutor has not accepted your job request yet to be hired : "+err.Error(), http.StatusForbidden)
 		return
 	}
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Error getting payload from JWT", http.StatusInternalServerError)
+		http.Error(w, "Error getting payload from JWT : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	clientInfo, err := jrH.clS.GetClientById(payload["id"])
 	if err != nil {
-		http.Error(w, "Could not get client info", http.StatusInternalServerError)
+		http.Error(w, "Could not get client info : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Print("Client is : ", clientInfo)
@@ -179,7 +179,7 @@ func (jrH JobRequestHandler) HireFromRequest(w http.ResponseWriter, r *http.Requ
 	fmt.Println("redirected to : ", return_url_actual)
 	if err != nil {
 		fmt.Println(err)
-		http.Error(w, "Payment redirection failed", http.StatusInternalServerError)
+		http.Error(w, "Payment redirection failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, checkoutURL, http.StatusSeeOther)
@@ -198,21 +198,21 @@ func (jrH JobRequestHandler) VerifyHireFromRequest(w http.ResponseWriter, r *htt
 	// Parse the fixed query string
 	params, err := url.ParseQuery(fixedQuery)
 	if err != nil {
-		http.Error(w, "Could not parse query parameters", http.StatusInternalServerError)
+		http.Error(w, "Could not parse query parameters : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	req_id := params.Get("reqId")
 	verResult, err := utils.VerifyPayment(tx_ref)
 	if err != nil {
-		http.Error(w, "Could not verify payment", http.StatusInternalServerError)
+		http.Error(w, "Could not verify payment : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	var jsonBody map[string]interface{}
 	err = json.Unmarshal([]byte(verResult), &jsonBody)
 	if err != nil {
-		http.Error(w, "Could not unmarshal json", http.StatusInternalServerError)
+		http.Error(w, "Could not unmarshal json : "+err.Error(), http.StatusInternalServerError)
 		fmt.Println("Error unmarshalling json", err)
 		return
 	}
@@ -227,19 +227,19 @@ func (jrH JobRequestHandler) VerifyHireFromRequest(w http.ResponseWriter, r *htt
 	}
 	err = jrH.jrS.UpdateJobRequest(req_id, updatedApp)
 	if err != nil {
-		http.Error(w, "Could not update application status", http.StatusInternalServerError)
+		http.Error(w, "Could not update application status : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	request, err := jrH.jrS.JobRequestById(req_id)
 	if err != nil {
-		http.Error(w, "Could not get application by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get application by id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	tutorId := request.TutorId
 	applicantInfo, err := jrH.tS.GetTutorById(tutorId)
 	if err != nil {
-		http.Error(w, "Could not get tutor information", http.StatusInternalServerError)
+		http.Error(w, "Could not get tutor information : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

@@ -39,7 +39,7 @@ func (hH *HiringHandler) Hire(w http.ResponseWriter, r *http.Request) {
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Error getting payload from JWT", http.StatusInternalServerError)
+		http.Error(w, "Error getting payload from JWT : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -47,7 +47,7 @@ func (hH *HiringHandler) Hire(w http.ResponseWriter, r *http.Request) {
 
 	clientInfo, err := hH.clS.GetClientById(payload["id"])
 	if err != nil {
-		http.Error(w, "Could not get client info", http.StatusInternalServerError)
+		http.Error(w, "Could not get client info : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Print("Client is : ", clientInfo)
@@ -66,7 +66,7 @@ func (hH *HiringHandler) Hire(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("redirected to : ", return_url_actual)
 	if err != nil {
 		fmt.Println(err)
-		http.Error(w, "Payment redirection failed", http.StatusInternalServerError)
+		http.Error(w, "Payment redirection failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, checkoutURL, http.StatusSeeOther)
@@ -85,21 +85,21 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 	// Parse the fixed query string
 	params, err := url.ParseQuery(fixedQuery)
 	if err != nil {
-		http.Error(w, "Could not parse query parameters", http.StatusInternalServerError)
+		http.Error(w, "Could not parse query parameters : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	app_id := params.Get("appId")
 	verResult, err := utils.VerifyPayment(tx_ref)
 	if err != nil {
-		http.Error(w, "Could not verify payment", http.StatusInternalServerError)
+		http.Error(w, "Could not verify payment : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	var jsonBody map[string]interface{}
 	err = json.Unmarshal([]byte(verResult), &jsonBody)
 	if err != nil {
-		http.Error(w, "Could not unmarshal json", http.StatusInternalServerError)
+		http.Error(w, "Could not unmarshal json : "+err.Error(), http.StatusInternalServerError)
 		fmt.Println("Error unmarshalling json", err)
 		return
 	}
@@ -114,20 +114,20 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 	}
 	err = hH.jaS.UpdateApplication(app_id, updatedApp)
 	if err != nil {
-		http.Error(w, "Could not update application status", http.StatusInternalServerError)
+		http.Error(w, "Could not update application status : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	appl, err := hH.jaS.GetApplicationById(app_id)
 	if err != nil {
-		http.Error(w, "Could not get application by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get application by id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	applicantId := appl.ApplicantId
 	applicantInfo, err := hH.tutSer.GetTutorById(applicantId)
 
 	if err != nil {
-		http.Error(w, "Could not get tutor information", http.StatusInternalServerError)
+		http.Error(w, "Could not get tutor information : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -150,14 +150,14 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 
 	_, err = hH.tutNtfSer.CreateTutorNotification(hiredNtf)
 	if err != nil {
-		http.Error(w, "Could not create hiring notification", http.StatusInternalServerError)
+		http.Error(w, "Could not create hiring notification : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -185,7 +185,7 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 	appDetail, err := hH.jaS.GetApplicationById(applicationId)
 
 	if err != nil {
-		http.Error(w, "Could not get notification by Id", http.StatusInternalServerError)
+		http.Error(w, "Could not get notification by Id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -197,7 +197,7 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = hH.tutNtfSer.CreateTutorNotification(shortlistedNtf)
 	if err != nil {
-		http.Error(w, "Could not create shortlist notification for tutor", http.StatusInternalServerError)
+		http.Error(w, "Could not create shortlist notification for tutor : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	res := Response{
@@ -208,7 +208,7 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -219,7 +219,7 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Could not parse form : "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	var videoURL string
@@ -235,7 +235,7 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			videoURL = ""
 			fmt.Printf("Error at upload is: %v", err)
-			http.Error(w, "Could not upload interview video", http.StatusInternalServerError)
+			http.Error(w, "Could not upload interview video : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -248,7 +248,7 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 	err = hH.jaS.UpdateApplication(appId, interviewAdded)
 
 	if err != nil {
-		http.Error(w, "Could not upload interview response", http.StatusInternalServerError)
+		http.Error(w, "Could not upload interview response : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// -------------------------------------------------------------------------------------------------------------
@@ -258,7 +258,7 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 
 	appDetail, err := hH.jaS.GetApplicationById(appId)
 	if err != nil {
-		http.Error(w, "Could not get application by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get application by id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Println("the job id is :", appDetail.JobId)
@@ -266,7 +266,7 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 	fmt.Print("\n The whole app is : ", appDetail)
 	jobDetail, err := hH.jbSer.GetJob(appDetail.JobId)
 	if err != nil {
-		http.Error(w, "Could not get job by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get job by id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -282,7 +282,7 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 
 	_, err = hH.cltNtfSer.CreateClientNotification(interviewResponse)
 	if err != nil {
-		http.Error(w, "Could not create notification for interview response", http.StatusInternalServerError)
+		http.Error(w, "Could not create notification for interview response : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Println("video url", videoURL)
@@ -297,7 +297,7 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

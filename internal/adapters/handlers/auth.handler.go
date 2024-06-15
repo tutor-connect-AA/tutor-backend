@@ -33,7 +33,7 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	usr, err := aH.aS.GetAuthByUsername(username)
 	if err != nil {
-		http.Error(w, "Login failed", http.StatusInternalServerError)
+		http.Error(w, "Login failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -48,28 +48,28 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if usr.Role == "CLIENT" {
 		clt, err := aH.cS.GetClientByUsername(usr.Username)
 		if err != nil {
-			http.Error(w, "Login failed", http.StatusInternalServerError)
+			http.Error(w, "Login failed : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		token, err = utils.Tokenize(clt.Id, string(clt.Role))
 		if err != nil {
-			http.Error(w, "Login failed", http.StatusInternalServerError)
+			http.Error(w, "Login failed : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 	} else if usr.Role == "TUTOR" {
 		ttr, err := aH.tS.GetTutorByUsername(usr.Username)
 		if err != nil {
-			http.Error(w, "Login failed", http.StatusInternalServerError)
+			http.Error(w, "Login failed : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		token, err = utils.Tokenize(ttr.Id, string(ttr.Role))
 		if err != nil {
-			http.Error(w, "Login failed", http.StatusInternalServerError)
+			http.Error(w, "Login failed : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
-		http.Error(w, "Unknown error type", http.StatusInternalServerError)
+		http.Error(w, "Unknown error type : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
