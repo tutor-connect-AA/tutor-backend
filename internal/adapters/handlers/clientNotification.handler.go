@@ -21,24 +21,24 @@ func (cNH *ClientNotificationHandler) GetClientNotification(w http.ResponseWrite
 	ntfId := r.URL.Query().Get("ntfId")
 	ntf, err := cNH.clientNotfService.GetClientNotificationById(ntfId)
 	if err != nil {
-		http.Error(w, "Could not get notification by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get notification by id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if ntf.OwnerId != payload["id"] {
-		http.Error(w, "Not allowed to access this notification", http.StatusForbidden)
+		http.Error(w, "Not allowed to access this notification : "+err.Error(), http.StatusForbidden)
 		return
 	}
 
 	err = cNH.clientNotfService.OpenedClientNotification(ntfId) //changes the notification status to opened
 	if err != nil {
-		http.Error(w, "Could not change the status of notification to opened", http.StatusInternalServerError)
+		http.Error(w, "Could not change the status of notification to opened : "+err.Error(), http.StatusInternalServerError)
 		// return this is commented because getting the notification is still successful.
 	}
 
@@ -49,7 +49,7 @@ func (cNH *ClientNotificationHandler) GetClientNotification(w http.ResponseWrite
 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to JSON : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -57,14 +57,14 @@ func (cNH *ClientNotificationHandler) GetClientNotification(w http.ResponseWrite
 func (cNH ClientNotificationHandler) GetClientNotifications(w http.ResponseWriter, r *http.Request) {
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	ntfs, err := cNH.clientNotfService.GetClientNotifications(payload["id"])
 
 	if err != nil {
-		http.Error(w, "Could not get notifications", http.StatusInternalServerError)
+		http.Error(w, "Could not get notifications : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (cNH ClientNotificationHandler) GetClientNotifications(w http.ResponseWrite
 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to JSON : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -84,13 +84,13 @@ func (cNH ClientNotificationHandler) UnopenedClientNtfs(w http.ResponseWriter, r
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	ntfs, err := cNH.clientNotfService.GetUnopenedClientNotifications(payload["id"])
 	if err != nil {
-		http.Error(w, "Could not get unopened notifications", http.StatusInternalServerError)
+		http.Error(w, "Could not get unopened notifications : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -101,7 +101,7 @@ func (cNH ClientNotificationHandler) UnopenedClientNtfs(w http.ResponseWriter, r
 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to JSON : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -109,13 +109,13 @@ func (cNH ClientNotificationHandler) UnopenedClientNtfs(w http.ResponseWriter, r
 func (cNH ClientNotificationHandler) CountUnopenedClientNtfs(w http.ResponseWriter, r *http.Request) {
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	count, err := cNH.clientNotfService.CountUnopenedClientNotifications(payload["id"])
 
 	if err != nil {
-		http.Error(w, "Could not get unopened notifications count", http.StatusInternalServerError)
+		http.Error(w, "Could not get unopened notifications count : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	res := Response{
@@ -124,7 +124,7 @@ func (cNH ClientNotificationHandler) CountUnopenedClientNtfs(w http.ResponseWrit
 	}
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to JSON : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

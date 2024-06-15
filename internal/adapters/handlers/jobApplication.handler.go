@@ -35,7 +35,7 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not get payload from token", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload from token : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 	}
 	ja, err := jaH.jaSer.Apply(newApplication)
 	if err != nil {
-		http.Error(w, "Could not create a new job application", http.StatusInternalServerError)
+		http.Error(w, "Could not create a new job application : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 	job, err := jaH.jobSer.GetJob(r.URL.Query().Get("id"))
 
 	if err != nil {
-		http.Error(w, "Could not get job from the application", http.StatusInternalServerError)
+		http.Error(w, "Could not get job from the application : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -70,7 +70,7 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 	_, err = jaH.cNtfSer.CreateClientNotification(newJobAppNotf)
 
 	if err != nil {
-		http.Error(w, "Could not create notification", http.StatusInternalServerError)
+		http.Error(w, "Could not create notification : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -81,7 +81,7 @@ func (jaH *JobApplicationHandler) Apply(w http.ResponseWriter, r *http.Request) 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -94,13 +94,13 @@ func (jaH *JobApplicationHandler) GetApplicationById(w http.ResponseWriter, r *h
 	application, err := jaH.jaSer.GetApplicationById(appId)
 
 	if err != nil {
-		http.Error(w, "Could not get application", http.StatusInternalServerError)
+		http.Error(w, "Could not get application : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	applicant, err := jaH.tutSer.GetTutorById(application.ApplicantId)
 
 	if err != nil {
-		http.Error(w, "Could not get application", http.StatusInternalServerError)
+		http.Error(w, "Could not get application : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -134,7 +134,7 @@ func (jaH *JobApplicationHandler) GetApplicationById(w http.ResponseWriter, r *h
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -149,7 +149,7 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 
 	apls, err := jaH.jaSer.GetApplicationsByJob(jId)
 	if err != nil {
-		http.Error(w, "Could not fetch applications", http.StatusInternalServerError)
+		http.Error(w, "Could not fetch applications : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	res := Response{}
@@ -160,7 +160,7 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 		err = utils.WriteJSON(w, http.StatusNoContent, res, nil)
 		if err != nil {
 			fmt.Printf("Could not encode to json %v", err)
-			http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+			http.Error(w, "JSON encoding failed ", http.StatusInternalServerError)
 			return
 		}
 		return
@@ -188,7 +188,7 @@ func (jaH *JobApplicationHandler) ApplicationsByTutor(w http.ResponseWriter, r *
 	}
 	apls, err := jaH.jaSer.GetApplicationsByTutor(tutorId)
 	if err != nil {
-		http.Error(w, "Could not fetch applications by tutor", http.StatusInternalServerError)
+		http.Error(w, "Could not fetch applications by tutor : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if len(apls) == 0 {
@@ -220,7 +220,7 @@ func (jaH *JobApplicationHandler) ApplicationsByClient(w http.ResponseWriter, r 
 	}
 	apls, err := jaH.jaSer.GetApplicationsByClient(clientId)
 	if err != nil {
-		http.Error(w, "Could not fetch applications by client", http.StatusInternalServerError)
+		http.Error(w, "Could not fetch applications by client : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if len(apls) == 0 {
@@ -239,7 +239,7 @@ func (jaH *JobApplicationHandler) ApplicationsByClient(w http.ResponseWriter, r 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -251,7 +251,7 @@ func (jaH *JobApplicationHandler) GetApplicationByStatus(w http.ResponseWriter, 
 
 	apls, err := jaH.jaSer.GetApplicationsByStatus(jobId, status)
 	if err != nil {
-		http.Error(w, "Could not fetch applications by status", http.StatusInternalServerError)
+		http.Error(w, "Could not fetch applications by status : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -264,7 +264,7 @@ func (jaH *JobApplicationHandler) GetApplicationByStatus(w http.ResponseWriter, 
 		err = utils.WriteJSON(w, http.StatusOK, res, nil)
 		if err != nil {
 			fmt.Printf("Could not encode to json %v", err)
-			http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+			http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		return
@@ -281,7 +281,7 @@ func (jaH *JobApplicationHandler) GetApplicationByStatus(w http.ResponseWriter, 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }

@@ -21,24 +21,24 @@ func (tNH TutorNotificationHandler) GetTutorNotification(w http.ResponseWriter, 
 	ntfId := r.URL.Query().Get("ntfId")
 	ntf, err := tNH.tutorNotfService.GetTutorNotificationById(ntfId)
 	if err != nil {
-		http.Error(w, "Could not get notification by id", http.StatusInternalServerError)
+		http.Error(w, "Could not get notification by id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if ntf.OwnerId != payload["id"] {
-		http.Error(w, "Not allowed to access this notification", http.StatusForbidden)
+		http.Error(w, "Not allowed to access this notification : "+err.Error(), http.StatusForbidden)
 		return
 	}
 
 	err = tNH.tutorNotfService.OpenedTutorNotification(ntfId) //changes the notification status to opened
 	if err != nil {
-		http.Error(w, "Could not change the status of notification to opened", http.StatusInternalServerError)
+		http.Error(w, "Could not change the status of notification to opened : "+err.Error(), http.StatusInternalServerError)
 		// return this is commented because getting the notification is still successful.
 	}
 
@@ -49,7 +49,7 @@ func (tNH TutorNotificationHandler) GetTutorNotification(w http.ResponseWriter, 
 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to JSON : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -58,14 +58,14 @@ func (tNH TutorNotificationHandler) GetTutorNotifications(w http.ResponseWriter,
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	ntfs, err := tNH.tutorNotfService.GetTutorNotifications(payload["id"])
 
 	if err != nil {
-		http.Error(w, "Could not get notifications", http.StatusInternalServerError)
+		http.Error(w, "Could not get notifications :"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (tNH TutorNotificationHandler) GetTutorNotifications(w http.ResponseWriter,
 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to JSON : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -92,7 +92,7 @@ func (tNH TutorNotificationHandler) UnopenedTutorNtfs(w http.ResponseWriter, r *
 
 	ntfs, err := tNH.tutorNotfService.GetUnopenedTutorNotifications(payload["id"])
 	if err != nil {
-		http.Error(w, "Could not get unopened notifications", http.StatusInternalServerError)
+		http.Error(w, "Could not get unopened notifications : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -103,7 +103,7 @@ func (tNH TutorNotificationHandler) UnopenedTutorNtfs(w http.ResponseWriter, r *
 
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to JSON : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -112,14 +112,14 @@ func (tNH TutorNotificationHandler) CountUnopenedTutorNtfs(w http.ResponseWriter
 
 	payload, err := utils.GetPayload(r)
 	if err != nil {
-		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		http.Error(w, "Could not get payload : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	count, err := tNH.tutorNotfService.CountUnopenedTutorNotifications(payload["id"])
 
 	if err != nil {
-		http.Error(w, "Could not get unopened notifications count", http.StatusInternalServerError)
+		http.Error(w, "Could not get unopened notifications count : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	res := Response{
@@ -128,7 +128,7 @@ func (tNH TutorNotificationHandler) CountUnopenedTutorNtfs(w http.ResponseWriter
 	}
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
-		http.Error(w, "Could not encode response to JSON", http.StatusInternalServerError)
+		http.Error(w, "Could not encode response to JSON : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

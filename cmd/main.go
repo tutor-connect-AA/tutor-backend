@@ -120,7 +120,7 @@ func main() {
 	mux.HandleFunc("/job-applications/create", jaHandler.Apply)
 	mux.HandleFunc("/job-applications/single", jaHandler.GetApplicationById)
 	mux.HandleFunc("/job-applications/jobs", jaHandler.ApplicationsByJob)
-	mux.HandleFunc("/job-applications/tutors", jaHandler.ApplicationsByJob)
+	mux.HandleFunc("/job-applications/tutors", jaHandler.ApplicationsByTutor)
 	mux.HandleFunc("/job-applications/clients", jaHandler.ApplicationsByClient)
 	mux.HandleFunc("/job-applications/status", jaHandler.GetApplicationByStatus)
 

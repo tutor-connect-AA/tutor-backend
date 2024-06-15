@@ -30,7 +30,7 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Preferred subjects are %v", r.Form["prefSubjects"])
 	stringPrefSubj := strings.Join(r.Form["prefSubjects"], ",")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Could not parse form : "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 	gradDate, err := time.Parse("2006-01-02", r.PostForm.Get("graduationDate"))
 	if err != nil {
 		fmt.Printf("Could not parse deadline %v", err)
-		http.Error(w, "Invalid date", http.StatusInternalServerError)
+		http.Error(w, "Invalid date : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		cvURL, err = utils.UploadToCloudinary(cv.(multipart.File), cvPath.(string))
 		if err != nil {
 			cvURL = ""
-			http.Error(w, "Could not upload cv", http.StatusInternalServerError)
+			http.Error(w, "Could not upload cv : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -86,7 +86,7 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			photoURL = ""
 			fmt.Printf("Error at upload is: %v", err)
-			http.Error(w, "Could not upload photo", http.StatusInternalServerError)
+			http.Error(w, "Could not upload photo : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -95,7 +95,7 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		eduCredURL, err = utils.UploadToCloudinary(eduCred.(multipart.File), eduCredPath.(string))
 		if err != nil {
 			eduCredURL = ""
-			http.Error(w, "Could not upload education credential of tutor", http.StatusInternalServerError)
+			http.Error(w, "Could not upload education credential of tutor : "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -132,7 +132,7 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 	err = utils.WriteJSON(w, http.StatusOK, tt, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
