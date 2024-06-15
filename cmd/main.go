@@ -24,9 +24,9 @@ func init() {
 	}
 }
 
-func CorsMiddleware(next http.Handler) http.Handler {
+func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://0.0.0.0:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
@@ -116,6 +116,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// handler := enableCors(mux)
+
 	protected := alice.New(AuthMiddleware)
 
 	fileUpload := alice.New(FileUploadMiddleware)
@@ -165,6 +167,6 @@ func main() {
 	mux.Handle("/client-notifications/count", protected.ThenFunc(cNfHandler.CountUnopenedClientNtfs))
 
 	log.Println("Listening on port:", port)
-	http.ListenAndServe(":"+port, mux)
+	http.ListenAndServe(":"+port, enableCors(mux))
 
 }
