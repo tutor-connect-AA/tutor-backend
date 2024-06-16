@@ -123,6 +123,7 @@ func (jaH *JobApplicationHandler) GetApplicationById(w http.ResponseWriter, r *h
 		"coverLetter":        application.CoverLetter,
 		"interviewQuestions": application.InterviewQuestions,
 		"interviewResponse":  application.InterviewResponse,
+		"tutorContactInfo":   application.TutorContactInfo,
 		"applicant":          applicantData,
 	}
 
