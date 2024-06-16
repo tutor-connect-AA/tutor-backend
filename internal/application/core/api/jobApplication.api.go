@@ -73,3 +73,8 @@ func (js JobApplicationAPI) GetApplicationsByStatus(jId string, status domain.Ap
 
 	return apls, err
 }
+func (js JobApplicationAPI) UpdateMultipleStatuses(ids []string, newStatus domain.ApplicationStatus) error {
+	err := js.jar.UpdateMultipleStatusesRepo(ids, newStatus)
+
+	return err
+}

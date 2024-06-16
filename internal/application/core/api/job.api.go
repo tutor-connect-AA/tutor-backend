@@ -39,6 +39,14 @@ func (ja JobAPI) GetListOfJobs(offset, limit int) ([]*domain.Job, error) {
 	return js, nil
 }
 
+func (ja JobAPI) UpdateJob(jobId string, updatedJob domain.Job) (*domain.Job, error) {
+	job, err := ja.jr.UpdateJobRepo(jobId, updatedJob)
+	if err != nil {
+		return nil, err
+	}
+	return job, nil
+}
+
 // func (ja JobAPI) UpdateJobPost(updatedFieldsObj domain.Job) error {
 // 	err := ja.jobDB.UpdateJobRepo(updatedFieldsObj)
 // 	return err

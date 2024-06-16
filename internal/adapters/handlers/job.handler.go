@@ -11,12 +11,12 @@ import (
 	"github.com/tutor-connect-AA/tutor-backend/internal/utils"
 )
 
-type JobAdapter struct {
+type JobHandler struct {
 	jobSer api_ports.JobAPIPort
 }
 
-func NewJobHandler(js api_ports.JobAPIPort) *JobAdapter {
-	return &JobAdapter{
+func NewJobHandler(js api_ports.JobAPIPort) *JobHandler {
+	return &JobHandler{
 		jobSer: js,
 	}
 }
@@ -24,7 +24,7 @@ func NewJobHandler(js api_ports.JobAPIPort) *JobAdapter {
 type CreateJobReq struct {
 }
 
-func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
+func (jobH JobHandler) PostJob(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusUnauthorized)
@@ -132,7 +132,7 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 		Hourly_Rate_Min:       mi,
 		Hourly_Rate_Max:       ma,
 	}
-	jb, err := adp.jobSer.CreateJobPost(nj)
+	jb, err := jobH.jobSer.CreateJobPost(nj)
 	if err != nil {
 		http.Error(w, "Could not post job ", http.StatusInternalServerError)
 		return
@@ -151,10 +151,10 @@ func (adp JobAdapter) PostJob(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprintf(w, "Created job : %v", jb)
 }
 
-func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
+func (jobH JobHandler) GetJobById(w http.ResponseWriter, r *http.Request) {
 	jobId := r.URL.Query().Get("id")
 
-	jb, err := adp.jobSer.GetJob(jobId)
+	jb, err := jobH.jobSer.GetJob(jobId)
 
 	if err != nil {
 		fmt.Printf("Error at get jobById handler %v", err)
@@ -178,7 +178,7 @@ func (adp JobAdapter) GetJobById(w http.ResponseWriter, r *http.Request) {
 // limit of 2 for now at least
 // first page:
 // offset == 0 and limit
-func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
+func (jobH JobHandler) GetJobs(w http.ResponseWriter, r *http.Request) {
 
 	const pageSize = 2
 
@@ -195,7 +195,7 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	offset := (pageNumber - 1) * pageSize
-	jbs, err := adp.jobSer.GetListOfJobs(offset, pageSize)
+	jbs, err := jobH.jobSer.GetListOfJobs(offset, pageSize)
 
 	jbList := []domain.Job{}
 
@@ -222,4 +222,48 @@ func (adp JobAdapter) GetJobs(w http.ResponseWriter, r *http.Request) {
 
 	// fmt.Fprintf(w, "Got list of jobs successfully %v", jbs)
 	// fmt.Printf("Here are the list of jobs %v", jbs)
+}
+
+func (jobH JobHandler) ComposeInterview(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		http.Error(w, "Error parsing form : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jobId := r.URL.Query().Get("jobId")
+
+	questions := r.PostForm["questions"]
+
+	var stringOfQuestions string
+
+	for _, question := range questions {
+		if stringOfQuestions == "" {
+			stringOfQuestions += question
+		} else {
+			stringOfQuestions += "~" + question
+		}
+	}
+	updatedJob := domain.Job{
+		Interview_Questions: stringOfQuestions,
+	}
+	job, err := jobH.jobSer.UpdateJob(jobId, updatedJob)
+
+	if err != nil {
+		http.Error(w, "Could not compose interview : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := Response{
+		Success: true,
+		Data:    job,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, response, nil)
+
+	if err != nil {
+		http.Error(w, "Error marshalling to json  : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 }

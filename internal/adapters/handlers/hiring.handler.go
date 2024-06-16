@@ -169,18 +169,13 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 
 func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 
-	r.ParseMultipartForm(10 << 20)
-
-	questions := r.PostForm.Get("questions")
-
 	applicationId := r.URL.Query().Get("id")
 
-	addedQuestions := &domain.JobApplication{
-		InterviewQuestions: questions,
-		Status:             domain.SHORTLISTED,
+	shortlistedApp := domain.JobApplication{
+		Status: domain.SHORTLISTED,
 	}
 
-	err := hH.jaS.UpdateApplication(applicationId, *addedQuestions)
+	err := hH.jaS.UpdateApplication(applicationId, shortlistedApp)
 
 	if err != nil {
 		http.Error(w, "Could not shortlist applicant", http.StatusInternalServerError)
@@ -190,7 +185,7 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 	appDetail, err := hH.jaS.GetApplicationById(applicationId)
 
 	if err != nil {
-		http.Error(w, "Could not get notification by Id : "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Could not get application by Id : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -227,6 +222,16 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not parse form : "+err.Error(), http.StatusBadRequest)
 		return
 	}
+	appDetail, err := hH.jaS.GetApplicationById(appId)
+	if err != nil {
+		http.Error(w, "Could not get application by id : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if appDetail.Status != domain.SHORTLISTED {
+		http.Error(w, "Only shortlisted applicants can respond to an interview", http.StatusForbidden)
+		return
+	}
 	var videoURL string
 
 	interviewVideoPath := r.Context().Value("interviewVideoPath")
@@ -261,11 +266,6 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 	// It is messy, since hiring handler not depends on a lot of other services.
 	// Is there a better way to go about this?
 
-	appDetail, err := hH.jaS.GetApplicationById(appId)
-	if err != nil {
-		http.Error(w, "Could not get application by id : "+err.Error(), http.StatusInternalServerError)
-		return
-	}
 	fmt.Println("the job id is :", appDetail.JobId)
 	fmt.Println("the app id is :", appDetail.Id)
 	fmt.Print("\n The whole app is : ", appDetail)
@@ -306,4 +306,55 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func (hH *HiringHandler) ShortlistMultiple(w http.ResponseWriter, r *http.Request) {
+
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		http.Error(w, "Could not parse form : "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	jobApplicationIds := r.PostForm["ids"]
+
+	err = hH.jaS.UpdateMultipleStatuses(jobApplicationIds, domain.SHORTLISTED)
+
+	if err != nil {
+		http.Error(w, "Could not shortlist the applicants : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for _, applicationId := range jobApplicationIds {
+		appDetail, err := hH.jaS.GetApplicationById(applicationId)
+
+		if err != nil {
+			http.Error(w, "Could not get application by Id : "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		ntfLink := fmt.Sprintf("https://tutor-backend-schs.onrender.com/jobApplication/single?id=%v", appDetail.Id)
+		message := fmt.Sprintf("You just got shortlisted for an interview. %v", ntfLink)
+		shortlistedNtf := domain.Notification{
+			OwnerId: appDetail.ApplicantId,
+			Message: message,
+		}
+		_, err = hH.tutNtfSer.CreateTutorNotification(shortlistedNtf)
+		if err != nil {
+			http.Error(w, "Could not create shortlist notification for tutor : "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+	}
+	res := Response{
+		Success: true,
+		Data:    "Successfully shortlisted applicants",
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

@@ -37,6 +37,7 @@ type job_table struct {
 	Hourly_Rate_Min       int                     `gorm:"column:hourly_rate_min;check:Hourly_Rate_Min > 0 "`
 	Hourly_Rate_Max       int                     `gorm:"column:hourly_mate_max;check:Hourly_Rate_Min > 0 "`
 	Applications          []job_application_table `gorm:"foreignKey:job_id;references:Id"`
+	Interview_Questions   string
 	// Clt                   client_table
 }
 
@@ -89,6 +90,7 @@ func (jr JobRepo) GetJobByIdRepo(id string) (*domain.Job, error) {
 		Status:                jb.Status,
 		Hourly_Rate_Min:       jb.Hourly_Rate_Min,
 		Hourly_Rate_Max:       jb.Hourly_Rate_Max,
+		Interview_Questions:   jb.Interview_Questions,
 	}, nil
 }
 
@@ -123,8 +125,20 @@ func (jr JobRepo) GetJobsRepo(offset, limit int) ([]*domain.Job, error) {
 			Status:                job.Status,
 			Hourly_Rate_Min:       job.Hourly_Rate_Min,
 			Hourly_Rate_Max:       job.Hourly_Rate_Max,
+			Interview_Questions:   job.Interview_Questions,
 		}
 		jobList = append(jobList, oneJob)
 	}
 	return jobList, nil
+}
+
+func (jr JobRepo) UpdateJobRepo(jobId string, updatedJob domain.Job) (*domain.Job, error) {
+	if res := jr.db.Model(&job_table{}).Where("id = ?", jobId).Updates(updatedJob); res.Error != nil {
+		return nil, res.Error
+	}
+
+	var updatedRecord domain.Job
+	jr.db.First(&updatedRecord, jobId)
+
+	return &updatedRecord, nil
 }

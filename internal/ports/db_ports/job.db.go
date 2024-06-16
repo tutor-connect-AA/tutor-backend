@@ -6,5 +6,6 @@ type JobDBPort interface {
 	CreateJobRepo(job domain.Job) (*domain.Job, error)
 	GetJobByIdRepo(id string) (*domain.Job, error)
 	GetJobsRepo(offset, limit int) ([]*domain.Job, error)
+	UpdateJobRepo(jobId string, updatedJob domain.Job) (*domain.Job, error)
 	// UpdateJobRepo(job domain.Job) error
 }
