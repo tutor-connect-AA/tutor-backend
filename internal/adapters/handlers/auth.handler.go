@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"github.com/tutor-connect-AA/tutor-backend/internal/ports/api_ports"
 	"github.com/tutor-connect-AA/tutor-backend/internal/utils"
 )
@@ -43,6 +43,8 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userId := ""
+
 	var token string
 
 	if usr.Role == "CLIENT" {
@@ -50,6 +52,9 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, "Login failed : "+err.Error(), http.StatusInternalServerError)
 			return
+		}
+		if userId == "" {
+			userId = clt.Id
 		}
 		token, err = utils.Tokenize(clt.Id, string(clt.Role))
 		if err != nil {
@@ -62,6 +67,9 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, "Login failed : "+err.Error(), http.StatusInternalServerError)
 			return
+		}
+		if userId == "" {
+			userId = ttr.Id
 		}
 		token, err = utils.Tokenize(ttr.Id, string(ttr.Role))
 		if err != nil {
@@ -81,14 +89,65 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	res := Response{
 		Success: true,
-		Data:    "Successfully logged in",
+		Data:    "Successfully logged in as user with id : " + userId,
 	}
 	// res := map[string]interface{}{
 	// 	"success": true,
 	// 	"data":    "Successfully logged in",
 	// }
 
-	utils.WriteJSON(w, http.StatusOK, res, headers)
+	err = utils.WriteJSON(w, http.StatusOK, res, headers)
 
-	fmt.Fprintf(w, "Successfully logged in.: %v", token)
+	if err != nil {
+		http.Error(w, "Could not marshal to json", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (aH *AuthHandler) ViewSelf(w http.ResponseWriter, r *http.Request) {
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	userId := payload["id"]
+	userRole := payload["role"]
+
+	if domain.Role(userRole) == domain.ClientRole {
+		clt, err := aH.cS.GetClientById(userId)
+		if err != nil {
+			http.Error(w, "Could not get client : "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res := Response{
+			Success: true,
+			Data:    clt,
+		}
+
+		err = utils.WriteJSON(w, http.StatusOK, res, nil)
+
+		if err != nil {
+			http.Error(w, "Could not marshal to json", http.StatusInternalServerError)
+			return
+		}
+
+	} else {
+		tut, err := aH.tS.GetTutorById(userId)
+		if err != nil {
+			http.Error(w, "Could not get tutor : "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res := Response{
+			Success: true,
+			Data:    tut,
+		}
+
+		err = utils.WriteJSON(w, http.StatusOK, res, nil)
+
+		if err != nil {
+			http.Error(w, "Could not marshal to json", http.StatusInternalServerError)
+			return
+		}
+
+	}
 }
