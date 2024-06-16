@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
@@ -112,6 +113,9 @@ func (aH *AuthHandler) ViewSelf(w http.ResponseWriter, r *http.Request) {
 	}
 	userId := payload["id"]
 	userRole := payload["role"]
+
+	fmt.Println("id", userId)
+	fmt.Println("role", userRole)
 
 	if domain.Role(userRole) == domain.ClientRole {
 		clt, err := aH.cS.GetClientById(userId)

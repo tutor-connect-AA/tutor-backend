@@ -72,6 +72,13 @@ func GetPayload(r *http.Request) (map[string]string, error) {
 		fmt.Println("Could not find user ID in claims")
 		return payload, err
 	}
+	role, ok := claims["role"].(string)
+	fmt.Println("role in payload is ", role)
+	if !ok {
+		fmt.Println("Could not find user role in claims")
+		return payload, err
+	}
 	payload["id"] = id
+	payload["role"] = role
 	return payload, nil
 }
