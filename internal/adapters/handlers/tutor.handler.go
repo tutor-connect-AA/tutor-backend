@@ -125,11 +125,16 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 	}
 	tt, err := th.ts.RegisterTutor(newTutor)
 	if err != nil {
-		http.Error(w, "Could not register tutor", http.StatusInternalServerError)
+		http.Error(w, "Could not register tutor: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = utils.WriteJSON(w, http.StatusOK, tt, nil)
+	response := Response{
+		Success: true,
+		Data:    tt,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, response, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
 		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
