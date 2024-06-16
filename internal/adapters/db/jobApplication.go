@@ -8,17 +8,16 @@ import (
 
 type job_application_table struct {
 	gorm.Model
-	Id                 uuid.UUID                `gorm:"type:uuid;default:uuid_generate_v4()"`
-	JobId              string                   //`gorm:"not null;foreignKey:job_table(Id)"`
-	Job_Table          job_table                `gorm:"foreignKey:job_id;references:Id"`
-	ApplicantId        string                   //`gorm:"not null;foreignKey:tutor_table(Id)"`
-	Tutor_table        tutor_table              `gorm:"foreignKey:applicant_id;references:Id"`
-	CoverLetter        string                   `gorm:"type:text"` // Assuming text storage for cover letter
-	Status             domain.ApplicationStatus `gorm:"type:text"`
-	TxRef              string                   `gorm:"text"` //this was unique so that one tx_ref can't be used to hire multiple times (removed now find other ways)
-	InterviewQuestions string                   `gorm:"text"`
-	InterviewResponse  string
-	TutorContactInfo   string `gorm:"text"`
+	Id                uuid.UUID                `gorm:"type:uuid;default:uuid_generate_v4()"`
+	JobId             string                   //`gorm:"not null;foreignKey:job_table(Id)"`
+	Job_Table         job_table                `gorm:"foreignKey:job_id;references:Id"`
+	ApplicantId       string                   //`gorm:"not null;foreignKey:tutor_table(Id)"`
+	Tutor_table       tutor_table              `gorm:"foreignKey:applicant_id;references:Id"`
+	CoverLetter       string                   `gorm:"type:text"` // Assuming text storage for cover letter
+	Status            domain.ApplicationStatus `gorm:"type:text"`
+	TxRef             string                   `gorm:"text"` //this was unique so that one tx_ref can't be used to hire multiple times (removed now find other ways)
+	InterviewResponse string
+	TutorContactInfo  string `gorm:"text"`
 	// Tutors      []*tutor_table `foreignKey:applicant_id"`
 	// File        string    `gorm:"type:text"` // Assuming text storage for other documents (link can also be used)
 
@@ -59,14 +58,13 @@ func (jar JobApplicationRepo) GetApplicationByIdRepo(id string) (*domain.JobAppl
 		return nil, res.Error
 	}
 	return &domain.JobApplication{
-		Id:                 application.Id.String(),
-		JobId:              application.JobId,
-		ApplicantId:        application.ApplicantId,
-		CoverLetter:        application.CoverLetter,
-		Status:             application.Status,
-		InterviewQuestions: application.InterviewQuestions,
-		InterviewResponse:  application.InterviewResponse,
-		TutorContactInfo:   application.TutorContactInfo,
+		Id:                application.Id.String(),
+		JobId:             application.JobId,
+		ApplicantId:       application.ApplicantId,
+		CoverLetter:       application.CoverLetter,
+		Status:            application.Status,
+		InterviewResponse: application.InterviewResponse,
+		TutorContactInfo:  application.TutorContactInfo,
 		// File:        application.File,
 	}, nil
 }
@@ -80,14 +78,13 @@ func (jar JobApplicationRepo) GetApplicationsByJobRepo(jId string) ([]*domain.Jo
 	var applications []*domain.JobApplication
 	for _, apl := range aplsByJob {
 		var newApl = domain.JobApplication{
-			Id:                 apl.Id.String(),
-			JobId:              apl.JobId,
-			ApplicantId:        apl.ApplicantId,
-			CoverLetter:        apl.CoverLetter,
-			Status:             apl.Status,
-			InterviewQuestions: apl.InterviewQuestions,
-			InterviewResponse:  apl.InterviewResponse,
-			TutorContactInfo:   apl.TutorContactInfo,
+			Id:                apl.Id.String(),
+			JobId:             apl.JobId,
+			ApplicantId:       apl.ApplicantId,
+			CoverLetter:       apl.CoverLetter,
+			Status:            apl.Status,
+			InterviewResponse: apl.InterviewResponse,
+			TutorContactInfo:  apl.TutorContactInfo,
 		}
 		applications = append(applications, &newApl)
 	}
@@ -106,14 +103,13 @@ func (jar JobApplicationRepo) GetApplicationsByTutorRepo(tId string) ([]*domain.
 	var applications []*domain.JobApplication
 	for _, apl := range aplsByTutor {
 		var newApl = domain.JobApplication{
-			Id:                 apl.Id.String(),
-			JobId:              apl.JobId,
-			ApplicantId:        apl.ApplicantId,
-			CoverLetter:        apl.CoverLetter,
-			Status:             apl.Status,
-			InterviewQuestions: apl.InterviewQuestions,
-			InterviewResponse:  apl.InterviewResponse,
-			TutorContactInfo:   apl.TutorContactInfo,
+			Id:                apl.Id.String(),
+			JobId:             apl.JobId,
+			ApplicantId:       apl.ApplicantId,
+			CoverLetter:       apl.CoverLetter,
+			Status:            apl.Status,
+			InterviewResponse: apl.InterviewResponse,
+			TutorContactInfo:  apl.TutorContactInfo,
 		}
 		applications = append(applications, &newApl)
 	}
@@ -132,14 +128,13 @@ func (jar JobApplicationRepo) GetApplicationsByClientRepo(cltId string) ([]*doma
 	var applications []*domain.JobApplication
 	for _, apl := range aplsByClt {
 		var newApl = domain.JobApplication{
-			Id:                 apl.Id.String(),
-			JobId:              apl.JobId,
-			ApplicantId:        apl.ApplicantId,
-			CoverLetter:        apl.CoverLetter,
-			Status:             apl.Status,
-			InterviewQuestions: apl.InterviewQuestions,
-			InterviewResponse:  apl.InterviewResponse,
-			TutorContactInfo:   apl.TutorContactInfo,
+			Id:                apl.Id.String(),
+			JobId:             apl.JobId,
+			ApplicantId:       apl.ApplicantId,
+			CoverLetter:       apl.CoverLetter,
+			Status:            apl.Status,
+			InterviewResponse: apl.InterviewResponse,
+			TutorContactInfo:  apl.TutorContactInfo,
 		}
 		applications = append(applications, &newApl)
 	}
@@ -168,18 +163,24 @@ func (jar JobApplicationRepo) GetApplicationsByStatusRepo(jId string, status dom
 	var applications []*domain.JobApplication
 	for _, apl := range aplsByStatus {
 		var newApl = domain.JobApplication{
-			Id:                 apl.Id.String(),
-			JobId:              apl.JobId,
-			ApplicantId:        apl.ApplicantId,
-			CoverLetter:        apl.CoverLetter,
-			Status:             apl.Status,
-			InterviewQuestions: apl.InterviewQuestions,
-			InterviewResponse:  apl.InterviewResponse,
-			TutorContactInfo:   apl.TutorContactInfo,
+			Id:                apl.Id.String(),
+			JobId:             apl.JobId,
+			ApplicantId:       apl.ApplicantId,
+			CoverLetter:       apl.CoverLetter,
+			Status:            apl.Status,
+			InterviewResponse: apl.InterviewResponse,
+			TutorContactInfo:  apl.TutorContactInfo,
 		}
 		applications = append(applications, &newApl)
 	}
 
 	return applications, nil
+}
+
+func (jar JobApplicationRepo) UpdateMultipleStatusesRepo(ids []string, newStatus domain.ApplicationStatus) error {
+
+	res := jar.db.Model(&job_application_table{}).Where("id IN ?", ids).Update("status", newStatus)
+
+	return res.Error
 
 }

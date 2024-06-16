@@ -28,4 +28,5 @@ type Job struct {
 	Status                JobStatus
 	Hourly_Rate_Min       int
 	Hourly_Rate_Max       int
+	Interview_Questions   string
 }

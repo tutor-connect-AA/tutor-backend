@@ -10,4 +10,5 @@ type JobApplicationDBPort interface {
 	GetApplicationsByClientRepo(tId string) ([]*domain.JobApplication, error)
 	UpdateJobApplicationRepo(applicationId string, updatedApp domain.JobApplication) error
 	GetApplicationsByStatusRepo(jId string, status domain.ApplicationStatus) ([]*domain.JobApplication, error)
+	UpdateMultipleStatusesRepo(ids []string, newStatus domain.ApplicationStatus) error
 }

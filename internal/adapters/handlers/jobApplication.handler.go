@@ -120,11 +120,10 @@ func (jaH *JobApplicationHandler) GetApplicationById(w http.ResponseWriter, r *h
 		"preferredLocation":         applicant.PreferredWorkLocation,
 	}
 	data := map[string]interface{}{
-		"coverLetter":        application.CoverLetter,
-		"interviewQuestions": application.InterviewQuestions,
-		"interviewResponse":  application.InterviewResponse,
-		"tutorContactInfo":   application.TutorContactInfo,
-		"applicant":          applicantData,
+		"coverLetter":       application.CoverLetter,
+		"interviewResponse": application.InterviewResponse,
+		"tutorContactInfo":  application.TutorContactInfo,
+		"applicant":         applicantData,
 	}
 
 	res := Response{
@@ -148,6 +147,12 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 		return
 	}
 
+	jobDetail, err := jaH.jobSer.GetJob(jId)
+	if err != nil {
+		http.Error(w, "Could not get job by id : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	apls, err := jaH.jaSer.GetApplicationsByJob(jId)
 	if err != nil {
 		http.Error(w, "Could not fetch applications : "+err.Error(), http.StatusInternalServerError)
@@ -166,6 +171,7 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 		}
 		return
 	}
+
 	aplList := []domain.JobApplication{}
 
 	for _, apl := range apls {
@@ -173,8 +179,9 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 	}
 
 	type FullApplication struct {
-		Application domain.JobApplication `json:"application"`
-		Applicant   domain.Tutor          `json:"applicant"`
+		Application        domain.JobApplication `json:"application"`
+		Applicant          domain.Tutor          `json:"applicant"`
+		InterviewQuestions string                `json:"interviewQuestions"`
 	}
 	applications := []FullApplication{}
 
@@ -185,10 +192,15 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 			http.Error(w, "Could not get applications :"+err.Error(), http.StatusInternalServerError)
 			return
 		}
+		var interviewQuestions = ""
+		if jobApplication.Status == domain.SHORTLISTED {
+			interviewQuestions = jobDetail.Interview_Questions
+		}
 
 		newApp := FullApplication{
-			Application: jobApplication,
-			Applicant:   *applicant,
+			Application:        jobApplication,
+			Applicant:          *applicant,
+			InterviewQuestions: interviewQuestions,
 		}
 		applications = append(applications, newApp)
 	}
