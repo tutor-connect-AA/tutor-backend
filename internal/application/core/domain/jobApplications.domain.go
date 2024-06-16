@@ -13,6 +13,7 @@ type JobApplication struct {
 	InterviewQuestions string
 	InterviewResponse  string
 	TxRef              string
+	TutorContactInfo   string
 	// File        string //video, other documents
 	CreatedOn time.Time
 	UpdatedOn time.Time

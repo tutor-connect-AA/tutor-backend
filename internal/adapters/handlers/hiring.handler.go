@@ -108,16 +108,6 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Payment verification failed")
 		return
 	}
-	updatedApp := domain.JobApplication{
-		Status: domain.HIRED,
-		TxRef:  tx_ref,
-	}
-	err = hH.jaS.UpdateApplication(app_id, updatedApp)
-	if err != nil {
-		http.Error(w, "Could not update application status : "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	appl, err := hH.jaS.GetApplicationById(app_id)
 	if err != nil {
 		http.Error(w, "Could not get application by id : "+err.Error(), http.StatusInternalServerError)
@@ -131,16 +121,29 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tutorContactInfo := map[string]string{
-		"phoneNumber": applicantInfo.PhoneNumber,
-		"email":       applicantInfo.Email,
+	tutorContact := fmt.Sprintf("email : %v , phoneNumber : %v", applicantInfo.Email, applicantInfo.PhoneNumber)
+
+	// tutorContactInfo := map[string]string{
+	// 	"phoneNumber": applicantInfo.PhoneNumber,
+	// 	"email":       applicantInfo.Email,
+	// }
+	updatedApp := domain.JobApplication{
+		Status:           domain.HIRED,
+		TxRef:            tx_ref,
+		TutorContactInfo: tutorContact,
 	}
-	res := Response{
-		Success: true,
-		Data:    tutorContactInfo,
+	err = hH.jaS.UpdateApplication(app_id, updatedApp)
+	if err != nil {
+		http.Error(w, "Could not update application status : "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	link := fmt.Sprintf("http://localhost:8080?jobApplication/single?id=%v", app_id)
+	// res := Response{
+	// 	Success: true,
+	// 	Data:    tutorContactInfo,
+	// }
+
+	link := fmt.Sprintf("https://tutor-backend-schs.onrender.com/jobApplication/single?id=%v", app_id)
 	message := fmt.Sprint("You have been hired.", link)
 
 	hiredNtf := domain.Notification{
@@ -154,12 +157,14 @@ func (hH *HiringHandler) VerifyHire(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utils.WriteJSON(w, http.StatusOK, res, nil)
-	if err != nil {
-		fmt.Printf("Could not encode to json %v", err)
-		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	http.Redirect(w, r, link, http.StatusSeeOther)
+
+	// err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	// if err != nil {
+	// 	fmt.Printf("Could not encode to json %v", err)
+	// 	http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 }
 
 func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
