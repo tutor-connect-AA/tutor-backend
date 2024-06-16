@@ -55,7 +55,7 @@ func (hH *HiringHandler) Hire(w http.ResponseWriter, r *http.Request) {
 
 	tx_ref := utils.RandomString(20)
 	return_url := "https://www.google.com"
-	return_url_actual := fmt.Sprintf(`http://localhost:8080/hiring/verifyHire?txRef=%s&appId=%s`, url.QueryEscape(tx_ref), url.QueryEscape(app_id)) //to be used later when deployed(b.v of verification error in url from Chapa )
+	return_url_actual := fmt.Sprintf(`https://tutor-backend-schs.onrender.com/hiring/verifyHire?txRef=%s&appId=%s`, url.QueryEscape(tx_ref), url.QueryEscape(app_id)) //to be used later when deployed(b.v of verification error in url from Chapa )
 
 	fmt.Println("Actual return url is :", return_url_actual)
 	fmt.Printf("return url at verify hire is: %v", return_url)
@@ -189,7 +189,7 @@ func (hH *HiringHandler) Shortlist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ntfLink := fmt.Sprintf("http://localhost:8080/jobApplication/single?id=%v", appDetail.Id)
+	ntfLink := fmt.Sprintf("https://tutor-backend-schs.onrender.com/jobApplication/single?id=%v", appDetail.Id)
 	message := fmt.Sprintf("You just got shortlisted for an interview. %v", ntfLink)
 	shortlistedNtf := domain.Notification{
 		OwnerId: appDetail.ApplicantId,
@@ -270,7 +270,7 @@ func (hH *HiringHandler) SendInterview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link := fmt.Sprintf("http://localhost:8080/jobApplication/single?id=%v", appId)
+	link := fmt.Sprintf("https://tutor-backend-schs.onrender.com/jobApplication/single?id=%v", appId)
 	message := fmt.Sprintf("A shortlisted applicant just replied for an interview. %v", link)
 
 	//------------------------------------------------------------------------------------------------------------------
