@@ -147,8 +147,10 @@ func main() {
 	mux.HandleFunc("/hiring/verify-hire", hireH.VerifyHire)
 	mux.HandleFunc("/hiring/shortlist", hireH.Shortlist)
 	mux.Handle("/hiring/reply", fileUpload.ThenFunc(hireH.SendInterview))
+	mux.HandleFunc("/hiring/shortlist/multiple", hireH.ShortlistMultiple)
 
 	mux.HandleFunc("/login", authHandler.Login)
+	mux.HandleFunc("/profile", authHandler.ViewSelf)
 
 	mux.Handle("/job-request/new", protected.ThenFunc(jrHandler.RequestJob))
 	mux.HandleFunc("/job-request/single", jrHandler.GetJobRequest)
