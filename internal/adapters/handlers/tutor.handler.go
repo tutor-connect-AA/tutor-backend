@@ -34,12 +34,6 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rating, err := strconv.ParseFloat(r.PostForm.Get("rating"), 32)
-	if err != nil {
-		http.Error(w, "Rating field data type mismatch", http.StatusInternalServerError)
-		return
-	}
-
 	hourlyRate, err := strconv.ParseFloat(r.PostForm.Get("hourlyRate"), 32)
 	if err != nil {
 		http.Error(w, "Hourly rate field data type mismatch", http.StatusInternalServerError)
@@ -52,8 +46,7 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid date : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	role := domain.Role(r.PostForm.Get("role"))                                // what if conversion fails
+	// what if conversion fails
 	education := domain.Education(r.PostForm.Get("education"))                 //what if conversion fails
 	currentlyEnrolled := domain.Education(r.PostForm.Get("currentlyEnrolled")) //what if conversion fails
 	gender := domain.Gender(r.PostForm.Get("gender"))
@@ -107,11 +100,11 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		PhoneNumber:         r.PostForm.Get("phoneNumber"),
 		Gender:              gender,
 		Photo:               photoURL,
-		Rating:              float32(rating),
+		Rating:              5,
 		Bio:                 r.PostForm.Get("bio"),
 		Username:            r.PostForm.Get("username"),
 		Password:            r.PostForm.Get("password"),
-		Role:                role,
+		Role:                domain.TutorRole,
 		CV:                  cvURL,
 		HourlyRate:          float32(hourlyRate),
 		Region:              r.PostForm.Get("region"),
