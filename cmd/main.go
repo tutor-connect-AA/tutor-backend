@@ -150,7 +150,7 @@ func main() {
 	mux.HandleFunc("/hiring/shortlist/multiple", hireH.ShortlistMultiple)
 
 	mux.HandleFunc("/login", authHandler.Login)
-	mux.HandleFunc("/profile", authHandler.ViewSelf)
+	mux.Handle("/profile", protected.ThenFunc(authHandler.ViewSelf))
 
 	mux.Handle("/job-request/new", protected.ThenFunc(jrHandler.RequestJob))
 	mux.HandleFunc("/job-request/single", jrHandler.GetJobRequest)
