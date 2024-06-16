@@ -170,8 +170,29 @@ func (jaH *JobApplicationHandler) ApplicationsByJob(w http.ResponseWriter, r *ht
 	for _, apl := range apls {
 		aplList = append(aplList, *apl)
 	}
+
+	type FullApplication struct {
+		Application domain.JobApplication `json:"application"`
+		Applicant   domain.Tutor          `json:"applicant"`
+	}
+	applications := []FullApplication{}
+
+	for _, jobApplication := range aplList {
+
+		applicant, err := jaH.tutSer.GetTutorById(jobApplication.ApplicantId)
+		if err != nil {
+			http.Error(w, "Could not get applications :"+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		newApp := FullApplication{
+			Application: jobApplication,
+			Applicant:   *applicant,
+		}
+		applications = append(applications, newApp)
+	}
 	res.Success = true
-	res.Data = aplList
+	res.Data = applications
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
