@@ -7,4 +7,5 @@ type TutorDBPort interface {
 	GetTutorByIdRepo(id string) (*domain.Tutor, error)
 	GetTutorByUsername(username string) (*domain.Tutor, error)
 	SearchTutorByNameRepo(name string) ([]*domain.Tutor, error)
+	GetTutorsRepo(offset, limit int) ([]*domain.Tutor, error)
 }
