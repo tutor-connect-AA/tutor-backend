@@ -137,24 +137,62 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Successfully registered tutor %v", tt)
 }
 
-// func (adp TutorHandler) LoginTutor(w http.ResponseWriter, r *http.Request) {
-// 	r.ParseMultipartForm(10 << 20)
-// 	if r.Method != http.MethodPost {
-// 		http.Error(w, "Post requests only", http.StatusMethodNotAllowed)
-// 		return
-// 	}
-// 	username := r.PostForm.Get("username")
-// 	password := r.PostForm.Get("password")
+func (th *TutorHandler) GetTutorById(w http.ResponseWriter, r *http.Request) {
+	tutId := r.URL.Query().Get("tutId")
 
-// 	token, err := adp.ts.LoginTutor(username, password)
+	tutor, err := th.ts.GetTutorById(tutId)
 
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		fmt.Fprintf(w, "Could not login")
-// 		return
-// 	}
+	if err != nil {
+		http.Error(w, "Could not get tutor by id : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-// 	w.Header().Set("Authorization", "Bearer "+token)
+	res := Response{
+		Success: true,
+		Data:    tutor,
+	}
 
-// 	fmt.Fprintf(w, "Successfully logged in.: %v", token)
-// }
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		http.Error(w, "Error marshalling to json "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (th *TutorHandler) SearchTutorByName(w http.ResponseWriter, r *http.Request) {
+
+	// r.ParseMultipartForm(10 << 20)
+
+	// searchName := r.PostForm.Get("searchName")
+
+	searchName := r.URL.Query().Get("searchName")
+
+	if searchName == "" {
+		http.Error(w, "Can't search with an empty name ", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println("searchTerm at handler : ", searchName)
+
+	tutors, err := th.ts.SearchTutorByName(searchName)
+
+	if err != nil {
+		http.Error(w, "Could not search tutor by name : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tutList := []domain.Tutor{}
+
+	for _, tut := range tutors {
+		tutList = append(tutList, *tut)
+	}
+	res := Response{
+		Success: true,
+		Data:    tutList,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
