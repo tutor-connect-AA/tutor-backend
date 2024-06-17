@@ -91,6 +91,7 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"userId": userId,
 		"header": token,
+		"role":   usr.Role,
 	}
 
 	res := Response{
