@@ -112,7 +112,7 @@ func main() {
 	//JobRequest Application configuration
 	jrRepo := db.NewJobRequestRepo(dbConnection)
 	jrSer := api.NewJobRequestAPI(jrRepo)
-	jrHandler := handlers.NewJobRequestHandler(jrSer, clientSer, tutSer)
+	jrHandler := handlers.NewJobRequestHandler(jrSer, clientSer, tutSer, tNtfSer, cNtfSer)
 
 	mux := http.NewServeMux()
 
