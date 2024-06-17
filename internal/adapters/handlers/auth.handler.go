@@ -88,14 +88,14 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	headers := http.Header{}
 	headers.Set("Authorization", "Bearer "+token)
 
-	data  := map[string]interface{} {
-		"userId" : userId,
-		"header" : token,
+	data := map[string]interface{}{
+		"userId": userId,
+		"header": token,
 	}
 
 	res := Response{
 		Success: true,
-		Data:    data
+		Data:    data,
 	}
 	// res := map[string]interface{}{
 	// 	"success": true,
