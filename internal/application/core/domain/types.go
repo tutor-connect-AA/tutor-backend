@@ -18,6 +18,7 @@ const (
 type Education string
 
 const (
+	Not         Education = "NOT"
 	Preparatory Education = "PREPARATORY"
 	Bachelors   Education = "BACHELORS"
 	Masters     Education = "MASTERS"

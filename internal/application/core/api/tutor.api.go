@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"github.com/tutor-connect-AA/tutor-backend/internal/ports/db_ports"
 )
@@ -40,6 +42,14 @@ func (ts *TutorService) GetTutorByUsername(username string) (*domain.Tutor, erro
 		return nil, err
 	}
 	return ttr, nil
+}
+func (ts *TutorService) SearchTutorByName(name string) ([]*domain.Tutor, error) {
+	tutors, err := ts.tutorRepo.SearchTutorByNameRepo(name)
+	fmt.Println("searchTerm at service : ", name)
+	if err != nil {
+		return nil, err
+	}
+	return tutors, nil
 }
 
 // func (ts *TutorService) LoginTutor(username, password string) (string, error) {

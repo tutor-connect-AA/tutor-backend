@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -171,5 +172,50 @@ func (ur *User) GetTutorByUsername(username string) (*domain.Tutor, error) {
 		GraduationDate: tutor.GraduationDate,
 		// PreferredSubjects: tutor.PreferredSubjects,
 	}, nil
+
+}
+
+func (ur *User) SearchTutorByNameRepo(name string) ([]*domain.Tutor, error) {
+
+	var tutors []tutor_table
+	res := ur.db.Raw("SELECT * FROM tutor_tables WHERE first_name ILIKE ? OR fathers_name ILIKE ?", "%"+name+"%", "%"+name+"%").Scan(&tutors)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	fmt.Println("Tutors from search at database is :", tutors)
+
+	var tutorsDomain []*domain.Tutor
+
+	for _, tutor := range tutors {
+		tutDom := &domain.Tutor{
+			Id:                  tutor.Id.String(),
+			FirstName:           tutor.First_Name,
+			FathersName:         tutor.Fathers_Name,
+			Email:               tutor.Email,
+			PhoneNumber:         tutor.Phone_Number,
+			Gender:              tutor.Gender,
+			Photo:               tutor.Photo,
+			Rating:              tutor.Rating,
+			Bio:                 tutor.Bio,
+			Username:            tutor.Username,
+			Password:            tutor.Password,
+			Role:                tutor.Role,
+			CV:                  tutor.CV,
+			HourlyRate:          tutor.HourlyRate,
+			Region:              tutor.Region,
+			City:                tutor.City,
+			Education:           tutor.Education,
+			FieldOfStudy:        tutor.FieldOfStudy,
+			EducationCredential: tutor.EducationCredential,
+			CurrentlyEnrolled:   tutor.CurrentlyEnrolled,
+			// ProofOfCurrentEnrollment: tutor.ProofOfCurrentEnrollment,
+			GraduationDate: tutor.GraduationDate,
+		}
+
+		tutorsDomain = append(tutorsDomain, tutDom)
+	}
+
+	return tutorsDomain, nil
 
 }

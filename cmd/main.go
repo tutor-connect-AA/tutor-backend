@@ -131,9 +131,11 @@ func main() {
 	mux.Handle("/jobs/post", protected.ThenFunc(jobHandler.PostJob))
 	mux.HandleFunc("/jobs/single", jobHandler.GetJobById)
 	mux.HandleFunc("/jobs", jobHandler.GetJobs)
-	mux.HandleFunc("/jobs/Interview", jobHandler.ComposeInterview)
+	mux.HandleFunc("/jobs/interview", jobHandler.ComposeInterview)
 
-	mux.Handle("/tutor/register", fileUpload.ThenFunc(tutHandler.RegisterTutor))
+	mux.Handle("/tutors/register", fileUpload.ThenFunc(tutHandler.RegisterTutor))
+	mux.HandleFunc("/tutors/search", tutHandler.SearchTutorByName)
+	mux.HandleFunc("/tutors/single", tutHandler.GetTutorById)
 	// mux.HandleFunc("/tutor/login", tutHandler.LoginTutor)
 
 	mux.HandleFunc("/job-applications/create", jaHandler.Apply)
