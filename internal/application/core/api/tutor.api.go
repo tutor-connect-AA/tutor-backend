@@ -62,6 +62,15 @@ func (ts TutorService) GetTutors(offset, limit int) ([]*domain.Tutor, error) {
 	return tutors, nil
 }
 
+func (ts TutorService) FilterTutor(gender domain.Gender, rating, hourlyMin, hourlyMax int, city string, education domain.Education, fieldOfStudy string) ([]*domain.Tutor, error) {
+	tutors, err := ts.tutorRepo.FilterTutorRepo(gender, rating, hourlyMin, hourlyMax, city, education, fieldOfStudy)
+
+	if err != nil {
+		return nil, err
+	}
+	return tutors, nil
+}
+
 // func (ts *TutorService) LoginTutor(username, password string) (string, error) {
 // 	ttr, err := ts.tutorRepo.GetTutorByUsername(username)
 // 	// fmt.Printf("client at client login service is %v", clt)

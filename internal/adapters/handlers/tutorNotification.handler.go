@@ -32,7 +32,7 @@ func (tNH TutorNotificationHandler) GetTutorNotification(w http.ResponseWriter, 
 	}
 
 	if ntf.OwnerId != payload["id"] {
-		http.Error(w, "Not allowed to access this notification : "+err.Error(), http.StatusForbidden)
+		http.Error(w, "Not allowed to access this notification", http.StatusForbidden)
 		return
 	}
 

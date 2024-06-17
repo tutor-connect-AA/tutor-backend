@@ -8,4 +8,5 @@ type TutorDBPort interface {
 	GetTutorByUsername(username string) (*domain.Tutor, error)
 	SearchTutorByNameRepo(name string) ([]*domain.Tutor, error)
 	GetTutorsRepo(offset, limit int) ([]*domain.Tutor, error)
+	FilterTutorRepo(gender domain.Gender, rating, hourlyMin, hourlyMax int, city string, education domain.Education, fieldOfStudy string) ([]*domain.Tutor, error)
 }

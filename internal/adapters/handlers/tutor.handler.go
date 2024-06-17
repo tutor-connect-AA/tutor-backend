@@ -241,3 +241,73 @@ func (th *TutorHandler) GetTutors(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func (th *TutorHandler) FilterTutors(w http.ResponseWriter, r *http.Request) {
+
+	err := r.ParseMultipartForm(10 << 20)
+
+	if err != nil {
+		http.Error(w, "Error parsing form : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	gender := domain.Gender(r.PostForm.Get("gender"))
+	city := r.PostForm.Get("city")
+	education := domain.Education(r.PostForm.Get("education"))
+
+	fmt.Println("education at filter handler is ", education)
+	fieldOfStudy := r.PostForm.Get("fieldOfStudy")
+
+	var ratingInt int
+
+	if rating := r.PostForm.Get("rating"); rating != "" {
+		ratingInt, err = strconv.Atoi(rating)
+		if err != nil {
+			http.Error(w, "Conversion of rating to integer failed"+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+	var hourlyMinInt int
+	if hourlyMin := r.PostForm.Get("hourlyMin"); hourlyMin != "" {
+		hourlyMinInt, err = strconv.Atoi(hourlyMin)
+		if err != nil {
+			http.Error(w, "Conversion of hourlyMin to integer failed"+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	var hourlyMaxInt int
+	if hourlyMax := r.PostForm.Get("hourlyMax"); hourlyMax != "" {
+		hourlyMaxInt, err = strconv.Atoi(hourlyMax)
+		if err != nil {
+			http.Error(w, "Conversion of hourlyMax to integer failed"+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	tutors, err := th.ts.FilterTutor(gender, ratingInt, hourlyMinInt, hourlyMaxInt, city, education, fieldOfStudy)
+
+	if err != nil {
+		http.Error(w, "Could not filter tutors : \n"+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var data []domain.Tutor
+	for _, tutor := range tutors {
+		data = append(data, *tutor)
+	}
+
+	res := Response{
+		Success: true,
+		Data:    data,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}

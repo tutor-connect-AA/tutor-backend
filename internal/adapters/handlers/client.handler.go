@@ -137,7 +137,7 @@ func (adp ClientAdapter) UpdateClientProfile(w http.ResponseWriter, r *http.Requ
 	}
 
 	if clientId != payload["id"] {
-		http.Error(w, "Not allowed to update this profile : "+err.Error(), http.StatusForbidden)
+		http.Error(w, "Not allowed to update this profile ", http.StatusForbidden)
 		return
 	}
 
