@@ -13,16 +13,20 @@ import (
 )
 
 type JobRequestHandler struct {
-	jrS api_ports.JobRequestAPIPort
-	clS api_ports.ClientAPIPort
-	tS  api_ports.TutorAPIPort
+	jrS     api_ports.JobRequestAPIPort
+	clS     api_ports.ClientAPIPort
+	tS      api_ports.TutorAPIPort
+	tNtfSer api_ports.TutorNotificationAPIPort
+	cNtfSer api_ports.ClientNotificationAPIPort
 }
 
-func NewJobRequestHandler(jrS api_ports.JobRequestAPIPort, clS api_ports.ClientAPIPort, tS api_ports.TutorAPIPort) *JobRequestHandler {
+func NewJobRequestHandler(jrS api_ports.JobRequestAPIPort, clS api_ports.ClientAPIPort, tS api_ports.TutorAPIPort, tNtfSer api_ports.TutorNotificationAPIPort, cNtfSer api_ports.ClientNotificationAPIPort) *JobRequestHandler {
 	return &JobRequestHandler{
-		jrS: jrS,
-		clS: clS,
-		tS:  tS,
+		jrS:     jrS,
+		clS:     clS,
+		tS:      tS,
+		tNtfSer: tNtfSer,
+		cNtfSer: cNtfSer,
 	}
 }
 func (jrH JobRequestHandler) RequestJob(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +64,7 @@ func (jrH JobRequestHandler) RequestJob(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Could not create job request : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	data := Response{
 		Success: true,
 		Data:    jr,
@@ -69,10 +74,25 @@ func (jrH JobRequestHandler) RequestJob(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Could not encode response to json : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	ntfLink := fmt.Sprintf("https://tutor-backend-schs.onrender.com/job-request/single?jrId=%v", newRequest.Id)
+	message := fmt.Sprintf("You have been requested for a job service. %v", ntfLink)
+
+	ntf := domain.Notification{
+		OwnerId: newRequest.TutorId,
+		Message: message,
+	}
+
+	_, err = jrH.tNtfSer.CreateTutorNotification(ntf)
+	if err != nil {
+		http.Error(w, "Could not send notification : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func (jrH JobRequestHandler) GetJobRequest(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := r.URL.Query().Get("jrId")
 	jr, err := jrH.jrS.JobRequestById(id)
 	if err != nil {
 		http.Error(w, "Could not get job request by id :"+err.Error(), http.StatusInternalServerError)
@@ -117,6 +137,7 @@ func (jrH JobRequestHandler) ChangeJobRequestStatus(w http.ResponseWriter, r *ht
 	updatedJR := domain.JobRequest{
 		Status: newJobRequestStatus,
 	}
+
 	err = jrH.jrS.UpdateJobRequest(jrId, updatedJR)
 
 	if err != nil {
@@ -136,6 +157,19 @@ func (jrH JobRequestHandler) ChangeJobRequestStatus(w http.ResponseWriter, r *ht
 		return
 	}
 
+	ntfLink := fmt.Sprintf("https://tutor-backend-schs.onrender.com/job-request/single?jrId=%v", jr.Id)
+	message := fmt.Sprintf("The status of a request you were involved in just changed to %v.  %v", newJobRequestStatus, ntfLink)
+
+	ntf := domain.Notification{
+		OwnerId: jr.ClientId,
+		Message: message,
+	}
+	_, err = jrH.cNtfSer.CreateClientNotification(ntf)
+
+	if err != nil {
+		http.Error(w, "Could not send notification : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (jrH JobRequestHandler) HireFromRequest(w http.ResponseWriter, r *http.Request) {
@@ -221,15 +255,10 @@ func (jrH JobRequestHandler) VerifyHireFromRequest(w http.ResponseWriter, r *htt
 		fmt.Fprintf(w, "Payment verification failed")
 		return
 	}
-	updatedApp := domain.JobRequest{
-		Status: domain.PAID,
-		TxRef:  tx_ref,
-	}
-	err = jrH.jrS.UpdateJobRequest(req_id, updatedApp)
-	if err != nil {
-		http.Error(w, "Could not update application status : "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// updatedApp := domain.JobRequest{
+	// 	Status: domain.PAID,
+	// 	TxRef:  tx_ref,
+	// }
 
 	request, err := jrH.jrS.JobRequestById(req_id)
 	if err != nil {
@@ -247,6 +276,20 @@ func (jrH JobRequestHandler) VerifyHireFromRequest(w http.ResponseWriter, r *htt
 		"phoneNumber": applicantInfo.PhoneNumber,
 		"email":       applicantInfo.Email,
 	}
+	tutorContact := fmt.Sprintf("email : %v , phoneNumber : %v", applicantInfo.Email, applicantInfo.PhoneNumber)
+
+	updatedReq := domain.JobRequest{
+		Status:           domain.PAID,
+		TutorContactInfo: tutorContact,
+		TxRef:            tx_ref,
+	}
+
+	err = jrH.jrS.UpdateJobRequest(req_id, updatedReq)
+	if err != nil {
+		http.Error(w, "Could not update application status : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	res := Response{
 		Success: true,
 		Data:    tutorContactInfo,
@@ -257,4 +300,19 @@ func (jrH JobRequestHandler) VerifyHireFromRequest(w http.ResponseWriter, r *htt
 		http.Error(w, "JSON encoding failed", http.StatusInternalServerError)
 		return
 	}
+
+	tNtfLink := fmt.Sprintf("https://tutor-backend-schs.onrender.com/job-request/single?jrId=%v", request.Id)
+	tMsg := fmt.Sprintf("You have been hired. %v", tNtfLink)
+
+	tNtf := domain.Notification{
+		Message: tMsg,
+		OwnerId: applicantInfo.Id,
+	}
+	_, err = jrH.tNtfSer.CreateTutorNotification(tNtf)
+	if err != nil {
+		http.Error(w, "Could not add notification for tutor :"+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, tNtfLink, http.StatusSeeOther)
 }

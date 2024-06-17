@@ -20,14 +20,15 @@ func NewJobRequestRepo(db *gorm.DB) *JobRequestRepo {
 
 type job_request_table struct {
 	gorm.Model
-	Id           uuid.UUID               `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	Description  string                  `gorm:"not null"` // description for the job by the client
-	Status       domain.JobRequestStatus `gorm:"type:text"`
-	ClientId     string                  //`gorm:"foreignKey:client_table(id)"` //id of the client who sent the request
-	Client_table client_table            `gorm:"foreignKey:ClientId;references:Id"`
-	TutorId      string                  //`gorm:"foreignKey:tutor_table(id)"` // id of the tutor for whom the request is sent
-	Tutor_table  tutor_table             `gorm:"foreignKey:TutorId;references:Id"`
-	TxRef        string                  `gorm:"text"`
+	Id               uuid.UUID               `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Description      string                  `gorm:"not null"` // description for the job by the client
+	Status           domain.JobRequestStatus `gorm:"type:text"`
+	ClientId         string                  //`gorm:"foreignKey:client_table(id)"` //id of the client who sent the request
+	Client_table     client_table            `gorm:"foreignKey:ClientId;references:Id"`
+	TutorId          string                  //`gorm:"foreignKey:tutor_table(id)"` // id of the tutor for whom the request is sent
+	Tutor_table      tutor_table             `gorm:"foreignKey:TutorId;references:Id"`
+	TxRef            string                  `gorm:"text"`
+	TutorContactInfo string                  `gorm:"text"`
 }
 
 func (jrr JobRequestRepo) CreateJobRequestRepo(newJob domain.JobRequest) (*domain.JobRequest, error) {
@@ -52,13 +53,14 @@ func (jrr JobRequestRepo) JobRequestByIdRepo(id string) (*domain.JobRequest, err
 		return nil, res.Error
 	}
 	return &domain.JobRequest{
-		Id:          jr.Id.String(),
-		Description: jr.Description,
-		Status:      jr.Status,
-		ClientId:    jr.ClientId,
-		TutorId:     jr.TutorId,
-		CreatedOn:   jr.CreatedAt,
-		TxRef:       jr.TxRef,
+		Id:               jr.Id.String(),
+		Description:      jr.Description,
+		Status:           jr.Status,
+		ClientId:         jr.ClientId,
+		TutorId:          jr.TutorId,
+		CreatedOn:        jr.CreatedAt,
+		TutorContactInfo: jr.TutorContactInfo,
+		TxRef:            jr.TxRef,
 	}, nil
 }
 
@@ -72,12 +74,13 @@ func (jrr JobRequestRepo) JobRequestsRepo() ([]*domain.JobRequest, error) {
 
 	for _, request := range jrs {
 		domainRequest := &domain.JobRequest{
-			Id:          request.Id.String(),
-			Description: request.Description,
-			Status:      request.Status,
-			ClientId:    request.ClientId,
-			TutorId:     request.TutorId,
-			TxRef:       request.TxRef,
+			Id:               request.Id.String(),
+			Description:      request.Description,
+			Status:           request.Status,
+			ClientId:         request.ClientId,
+			TutorId:          request.TutorId,
+			TutorContactInfo: request.TutorContactInfo,
+			TxRef:            request.TxRef,
 		}
 		requests = append(requests, domainRequest)
 	}
