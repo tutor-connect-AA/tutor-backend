@@ -196,3 +196,48 @@ func (th *TutorHandler) SearchTutorByName(w http.ResponseWriter, r *http.Request
 		return
 	}
 }
+
+func (th *TutorHandler) GetTutors(w http.ResponseWriter, r *http.Request) {
+
+	const pageSize = 5
+
+	p := r.URL.Query().Get("page")
+	if p == "" {
+		p = "0"
+	}
+
+	pageNumber, err := strconv.Atoi(p)
+	if err != nil {
+		http.Error(w, `Could not get a list of jobs : `+err.Error(), http.StatusInternalServerError)
+		fmt.Printf("Could not convert string to int %v", err)
+		return
+	}
+
+	offset := (pageNumber - 1) * pageSize
+
+	tutors, err := th.ts.GetTutors(offset, pageSize)
+
+	if err != nil {
+		http.Error(w, "Error getting tutors : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var tuts []domain.Tutor
+
+	for _, tutor := range tutors {
+		tuts = append(tuts, *tutor)
+	}
+
+	res := Response{
+		Success: true,
+		Data:    tuts,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		fmt.Printf("Could not encode to json %v", err)
+		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}

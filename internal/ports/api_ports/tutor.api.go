@@ -7,5 +7,6 @@ type TutorAPIPort interface {
 	GetTutorById(id string) (*domain.Tutor, error)
 	GetTutorByUsername(username string) (*domain.Tutor, error)
 	SearchTutorByName(name string) ([]*domain.Tutor, error)
+	GetTutors(offset, limit int) ([]*domain.Tutor, error)
 	// LoginTutor(username, password string) (string, error)
 }

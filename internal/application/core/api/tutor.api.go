@@ -52,6 +52,16 @@ func (ts *TutorService) SearchTutorByName(name string) ([]*domain.Tutor, error) 
 	return tutors, nil
 }
 
+func (ts TutorService) GetTutors(offset, limit int) ([]*domain.Tutor, error) {
+
+	tutors, err := ts.tutorRepo.GetTutorsRepo(offset, limit)
+
+	if err != nil {
+		return nil, err
+	}
+	return tutors, nil
+}
+
 // func (ts *TutorService) LoginTutor(username, password string) (string, error) {
 // 	ttr, err := ts.tutorRepo.GetTutorByUsername(username)
 // 	// fmt.Printf("client at client login service is %v", clt)

@@ -219,3 +219,46 @@ func (ur *User) SearchTutorByNameRepo(name string) ([]*domain.Tutor, error) {
 	return tutorsDomain, nil
 
 }
+
+func (jr User) GetTutorsRepo(offset, limit int) ([]*domain.Tutor, error) {
+	var tuts []tutor_table
+
+	var tutList []*domain.Tutor
+
+	if err := jr.db.Order("created_at").Offset(offset).Limit(limit).Find(&tuts).Error; err != nil {
+		return nil, err
+	}
+
+	// res := jr.db.Find(&jbs)
+	// if res.Error != nil {
+	// 	return nil, res.Error
+	// }
+
+	for _, tutor := range tuts {
+		oneTutor := &domain.Tutor{
+			Id:                  tutor.Id.String(),
+			FirstName:           tutor.First_Name,
+			FathersName:         tutor.Fathers_Name,
+			Email:               tutor.Email,
+			PhoneNumber:         tutor.Phone_Number,
+			Gender:              tutor.Gender,
+			Photo:               tutor.Photo,
+			Rating:              tutor.Rating,
+			Bio:                 tutor.Bio,
+			Username:            tutor.Username,
+			Password:            tutor.Password,
+			Role:                tutor.Role,
+			CV:                  tutor.CV,
+			HourlyRate:          tutor.HourlyRate,
+			Region:              tutor.Region,
+			City:                tutor.City,
+			Education:           tutor.Education,
+			FieldOfStudy:        tutor.FieldOfStudy,
+			EducationCredential: tutor.EducationCredential,
+			CurrentlyEnrolled:   tutor.CurrentlyEnrolled,
+			GraduationDate:      tutor.GraduationDate,
+		}
+		tutList = append(tutList, oneTutor)
+	}
+	return tutList, nil
+}
