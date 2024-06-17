@@ -136,7 +136,8 @@ func main() {
 	mux.Handle("/tutors/register", fileUpload.ThenFunc(tutHandler.RegisterTutor))
 	mux.HandleFunc("/tutors/search", tutHandler.SearchTutorByName)
 	mux.HandleFunc("/tutors/single", tutHandler.GetTutorById)
-	mux.HandleFunc("/tutors/", tutHandler.GetTutors)
+	mux.HandleFunc("/tutors", tutHandler.GetTutors)
+	mux.HandleFunc("/tutors/filter", tutHandler.FilterTutors)
 	// mux.HandleFunc("/tutor/login", tutHandler.LoginTutor)
 
 	mux.HandleFunc("/job-applications/create", jaHandler.Apply)

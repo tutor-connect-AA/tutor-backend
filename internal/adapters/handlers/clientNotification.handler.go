@@ -32,7 +32,7 @@ func (cNH *ClientNotificationHandler) GetClientNotification(w http.ResponseWrite
 	}
 
 	if ntf.OwnerId != payload["id"] {
-		http.Error(w, "Not allowed to access this notification : "+err.Error(), http.StatusForbidden)
+		http.Error(w, "Not allowed to access this notification ", http.StatusForbidden)
 		return
 	}
 

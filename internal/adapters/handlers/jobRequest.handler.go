@@ -111,7 +111,7 @@ func (jrH JobRequestHandler) ChangeJobRequestStatus(w http.ResponseWriter, r *ht
 	}
 
 	if payload["id"] != jr.TutorId {
-		http.Error(w, "Not allowed to make this change : "+err.Error(), http.StatusForbidden)
+		http.Error(w, "Not allowed to make this change", http.StatusForbidden)
 		return
 	}
 	updatedJR := domain.JobRequest{
@@ -149,7 +149,7 @@ func (jrH JobRequestHandler) HireFromRequest(w http.ResponseWriter, r *http.Requ
 	}
 
 	if jReq.Status != domain.ACCEPTED {
-		http.Error(w, "The tutor has not accepted your job request yet to be hired : "+err.Error(), http.StatusForbidden)
+		http.Error(w, "The tutor has not accepted your job request yet to be hired", http.StatusForbidden)
 		return
 	}
 

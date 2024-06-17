@@ -262,3 +262,99 @@ func (jr User) GetTutorsRepo(offset, limit int) ([]*domain.Tutor, error) {
 	}
 	return tutList, nil
 }
+func (jr User) FilterTutorRepo(gender domain.Gender, rating, hourlyMin, hourlyMax int, city string, education domain.Education, fieldOfStudy string) ([]*domain.Tutor, error) {
+	fmt.Println("Gender for filter at filter repo is : ", gender)
+	fmt.Println("Education for filter at filter repo is : ", education)
+	// query := `
+	// 	SELECT * FROM tutor_tables
+	// 	WHERE
+	// 		($1::text IS NULL OR gender = $1)
+	// 		AND ($2::int IS NULL OR rating >= $2)
+	// 		AND ($3::int IS NULL OR hourly_rate >= $3)
+	// 		AND ($4::int IS NULL OR hourly_rate <= $4)
+	// 		AND ($5::text IS NULL OR city ILIKE $5)
+	// 		AND ($6::text IS NULL OR education ILIKE $6)
+	// 		AND ($7::text IS NULL OR field_of_study ILIKE $7)
+	// `
+	// 	query := `
+	// 	SELECT * FROM tutor_tables
+	// 	WHERE
+	// 	  ($1 IS NULL OR gender = $1)
+	// 	  AND ($2 IS NULL OR rating >= $2)
+	// 	  AND ($3 IS NULL OR hourly_rate >= $3)
+	// 	  AND ($4 IS NULL OR hourly_rate <= $4)
+	// 	  AND ($5 IS NULL OR city ILIKE $5)
+	// 	  AND ($6 IS NULL OR education ILIKE $6)
+	// 	  AND ($7 IS NULL OR field_of_study ILIKE $7);
+	// `
+	query := `
+	SELECT * FROM tutor_tables
+	WHERE 
+		(LOWER(gender) = LOWER($1) OR $1 = '')
+		AND (rating >= $2 OR $2 = 0)
+		AND (hourly_rate >= $3 OR $3 = 0)
+		AND (hourly_rate <= $4 OR $4 = 0)
+		AND (LOWER(city) LIKE LOWER($5) OR $5 = '')
+		AND (LOWER(education) LIKE LOWER($6) OR $6 = '')
+		AND (LOWER(field_of_study) LIKE LOWER($7) OR $7 = '')
+`
+	var filtered []tutor_table
+	err := jr.db.Raw(query,
+		gender,            // Gender filter
+		rating,            // Rating filter
+		hourlyMin,         // Minimum hourly rate filter
+		hourlyMax,         // Maximum hourly rate filter
+		"%"+city+"%",      // City filter
+		"%"+education+"%", // Education filter
+		"%"+fieldOfStudy+"%").Scan(&filtered).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var tutors []*domain.Tutor
+
+	for _, tutor := range filtered {
+
+		tt := &domain.Tutor{
+			Id:                  tutor.Id.String(),
+			FirstName:           tutor.First_Name,
+			FathersName:         tutor.Fathers_Name,
+			Email:               tutor.Email,
+			PhoneNumber:         tutor.Phone_Number,
+			Gender:              tutor.Gender,
+			Photo:               tutor.Photo,
+			Rating:              tutor.Rating,
+			Bio:                 tutor.Bio,
+			Username:            tutor.Username,
+			Password:            tutor.Password,
+			Role:                tutor.Role,
+			CV:                  tutor.CV,
+			HourlyRate:          tutor.HourlyRate,
+			Region:              tutor.Region,
+			City:                tutor.City,
+			Education:           tutor.Education,
+			FieldOfStudy:        tutor.FieldOfStudy,
+			EducationCredential: tutor.EducationCredential,
+			CurrentlyEnrolled:   tutor.CurrentlyEnrolled,
+			GraduationDate:      tutor.GraduationDate,
+		}
+
+		tutors = append(tutors, tt)
+	}
+	return tutors, nil
+}
+
+func nullifyEmptyString(s string) interface{} {
+	if s == "" {
+		return ""
+	}
+	return s
+}
+
+func nullifyZeroValue(i int) interface{} {
+	if i == 0 {
+		return 0
+	}
+	return i
+}

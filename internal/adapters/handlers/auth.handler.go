@@ -78,7 +78,7 @@ func (aH *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		http.Error(w, "Unknown error type : "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Unknown error type ", http.StatusInternalServerError)
 		return
 	}
 
