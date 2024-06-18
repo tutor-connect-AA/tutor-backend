@@ -20,9 +20,9 @@ func NewJobRepo(db *gorm.DB) *JobRepo {
 
 type job_table struct {
 	gorm.Model
-	Id                    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Title                 string    `gorm:"size: 255"`
-	Description           string
+	Id                    uuid.UUID    `gorm:"type:uuid;default:uuid_generate_v4()"`
+	Title                 string       `gorm:"size: 255"`
+	Description           string       `gorm:"not null"`
 	Posted_By             string       //`gorm:"foreignKey:Posted_By` fk
 	Client_table          client_table `gorm:"foreignKey:Posted_By;references:Id"`
 	Deadline              time.Time
