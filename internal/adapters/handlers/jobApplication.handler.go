@@ -319,3 +319,36 @@ func (jaH *JobApplicationHandler) GetApplicationByStatus(w http.ResponseWriter, 
 		return
 	}
 }
+
+func (jaH JobApplicationHandler) HasApplied(w http.ResponseWriter, r *http.Request) {
+	jobId := r.URL.Query().Get("jobId")
+
+	if jobId == "" {
+		http.Error(w, "job id can not be null", http.StatusBadRequest)
+		return
+	}
+
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	applied, err := jaH.jaSer.HasApplied(jobId, payload["id"])
+
+	if err != nil {
+		http.Error(w, "Could not check if tutor has already applied : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	res := Response{
+		Success: true,
+		Data:    applied,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+
+	if err != nil {
+		http.Error(w, "could not serialize to json ", http.StatusInternalServerError)
+		return
+	}
+}

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -32,6 +33,16 @@ type job_request_table struct {
 }
 
 func (jrr JobRequestRepo) CreateJobRequestRepo(newJob domain.JobRequest) (*domain.JobRequest, error) {
+	requested, err := jrr.HasRequestedRepo(newJob.ClientId, newJob.TutorId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if requested {
+		return nil, errors.New("can't add a new request on a pending job request")
+	}
+
 	jr := job_request_table{
 		Description: newJob.Description,
 		Status:      domain.REQUESTED,
@@ -93,4 +104,19 @@ func (jrr JobRequestRepo) UpdateRequestRepo(requestId string, updatedRequest dom
 	res := jrr.db.Model(&job_request_table{}).Where("id = ?", requestId).Updates(updatedRequest)
 
 	return res.Error
+}
+
+func (jrr JobRequestRepo) HasRequestedRepo(clientId, tutorId string) (bool, error) {
+	var count int64
+	err := jrr.db.Model(&job_request_table{}).Count(&count).
+		Where("client_id = ?", clientId).
+		Where("tutor_id = ?", tutorId).
+		Where("status = ? ", domain.REQUESTED).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }

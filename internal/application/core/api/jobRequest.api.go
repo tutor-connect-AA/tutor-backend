@@ -43,3 +43,11 @@ func (jrs JobRequestAPI) UpdateJobRequest(requestId string, updatedJob domain.Jo
 	err := jrs.jrR.UpdateRequestRepo(requestId, updatedJob)
 	return err
 }
+func (jrs JobRequestAPI) HasRequested(clientId, tutorId string) (bool, error) {
+
+	requested, err := jrs.jrR.HasRequestedRepo(clientId, tutorId)
+	if err != nil {
+		return false, err
+	}
+	return requested, nil
+}

@@ -78,3 +78,12 @@ func (js JobApplicationAPI) UpdateMultipleStatuses(ids []string, newStatus domai
 
 	return err
 }
+
+func (js JobApplicationAPI) HasApplied(jobId, tutorId string) (bool, error) {
+	applied, err := js.jar.HasAppliedRepo(jobId, tutorId)
+
+	if err != nil {
+		return false, err
+	}
+	return applied, nil
+}

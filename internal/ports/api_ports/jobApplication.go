@@ -11,4 +11,5 @@ type JobApplicationAPIPort interface {
 	UpdateApplication(applicationId string, updatedApp domain.JobApplication) error
 	GetApplicationsByStatus(jId string, status domain.ApplicationStatus) ([]*domain.JobApplication, error)
 	UpdateMultipleStatuses(ids []string, newStatus domain.ApplicationStatus) error
+	HasApplied(jobId, tutorId string) (bool, error)
 }
