@@ -75,7 +75,7 @@ func (jrH JobRequestHandler) RequestJob(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ntfLink := fmt.Sprintf("https://tutor-backend-schs.onrender.com/job-request/single?jrId=%v", newRequest.Id)
+	ntfLink := fmt.Sprintf("https://tutor-backend-schs.onrender.com/job-request/single?jrId=%v", jr.Id)
 	message := fmt.Sprintf("You have been requested for a job service. %v", ntfLink)
 
 	ntf := domain.Notification{
