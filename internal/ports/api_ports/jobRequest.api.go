@@ -7,4 +7,5 @@ type JobRequestAPIPort interface {
 	JobRequestById(id string) (*domain.JobRequest, error)
 	JobRequests() ([]*domain.JobRequest, error)
 	UpdateJobRequest(requestId string, updatedJob domain.JobRequest) error
+	HasRequested(clientId, tutorId string) (bool, error)
 }

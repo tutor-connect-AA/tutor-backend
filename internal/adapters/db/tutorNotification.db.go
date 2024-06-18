@@ -51,11 +51,10 @@ func (tNotf TutorNotificationRepo) GetTutorNotificationById(id string) (*domain.
 		return nil, res.Error
 	}
 	return &domain.Notification{
-		Id:        tNtf.Id.String(),
-		Message:   tNtf.Message,
-		OwnerId:   tNtf.OwnerId.String(),
-		Opened:    tNtf.Opened,
-		CreatedAt: tNtf.CreatedAt,
+		Id:      tNtf.Id.String(),
+		Message: tNtf.Message,
+		OwnerId: tNtf.OwnerId.String(),
+		Opened:  tNtf.Opened,
 	}, nil
 
 }

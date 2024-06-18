@@ -7,4 +7,5 @@ type JobRequestDBPort interface {
 	JobRequestByIdRepo(id string) (*domain.JobRequest, error)
 	JobRequestsRepo() ([]*domain.JobRequest, error)
 	UpdateRequestRepo(requestId string, updatedRequest domain.JobRequest) error
+	HasRequestedRepo(clientId, tutorId string) (bool, error)
 }

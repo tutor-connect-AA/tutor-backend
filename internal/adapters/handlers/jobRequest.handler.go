@@ -316,3 +316,35 @@ func (jrH JobRequestHandler) VerifyHireFromRequest(w http.ResponseWriter, r *htt
 
 	http.Redirect(w, r, tNtfLink, http.StatusSeeOther)
 }
+
+func (jrH JobRequestHandler) HasRequested(w http.ResponseWriter, r *http.Request) {
+	tutorId := r.URL.Query().Get("tutId")
+	if tutorId == "" {
+		http.Error(w, "Tutor id can not be null", http.StatusBadRequest)
+		return
+	}
+
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Could not get payload", http.StatusInternalServerError)
+		return
+	}
+
+	clientId := payload["id"]
+	requested, err := jrH.jrS.HasRequested(clientId, tutorId)
+
+	if err != nil {
+		http.Error(w, "Could not check if already requested : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	res := Response{
+		Success: true,
+		Data:    requested,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+	if err != nil {
+		http.Error(w, "Could not serialize to json", http.StatusInternalServerError)
+		return
+	}
+}
