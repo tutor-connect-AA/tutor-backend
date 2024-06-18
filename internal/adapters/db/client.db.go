@@ -104,7 +104,9 @@ func (ur *User) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 func (ur User) GetClientsPort() ([]*domain.Client, error) {
 	var clients []*client_table
 
-	res := ur.db.Find(&clients)
+	res := ur.db.
+		Order("created_at DESC").
+		Find(&clients)
 
 	if res.Error != nil {
 		return nil, res.Error

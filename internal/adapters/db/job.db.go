@@ -99,7 +99,7 @@ func (jr JobRepo) GetJobsRepo(offset, limit int) ([]*domain.Job, error) {
 
 	var jobList []*domain.Job
 
-	if err := jr.db.Order("created_at desc").Offset(offset).Limit(limit).Find(&jbs).Error; err != nil {
+	if err := jr.db.Order("created_at DESC").Offset(offset).Limit(limit).Find(&jbs).Error; err != nil {
 		return nil, err
 	}
 
@@ -148,7 +148,7 @@ func (jr JobRepo) GetJobByClientRepo(clientId string, offset, limit int) ([]*dom
 
 	var jobList []*domain.Job
 
-	if err := jr.db.Order("created_at desc").
+	if err := jr.db.Order("created_at DESC").
 		Where("posted_by = ?", clientId).
 		Offset(offset).
 		Limit(limit).

@@ -64,7 +64,9 @@ func (tNotf TutorNotificationRepo) GetTutorNotifications(ownerId string) ([]*dom
 
 	var tNtfs []tutor_notification_table
 
-	res := tNotf.db.Order("created_at DESC").Where("owner_id = ?", ownerId).Find(&tNtfs)
+	res := tNotf.db.Order("created_at DESC").
+		Where("owner_id = ?", ownerId).
+		Find(&tNtfs)
 	if res.Error != nil {
 		return nil, res.Error
 	}

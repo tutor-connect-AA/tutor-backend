@@ -71,7 +71,10 @@ func (jar JobApplicationRepo) GetApplicationByIdRepo(id string) (*domain.JobAppl
 
 func (jar JobApplicationRepo) GetApplicationsByJobRepo(jId string) ([]*domain.JobApplication, error) {
 	var aplsByJob []job_application_table
-	res := jar.db.Where("job_id = ?", jId).Find(&aplsByJob)
+	res := jar.db.Order("created_at DESC").
+		Where("job_id = ?", jId).
+		Find(&aplsByJob)
+
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -95,7 +98,9 @@ func (jar JobApplicationRepo) GetApplicationsByJobRepo(jId string) ([]*domain.Jo
 func (jar JobApplicationRepo) GetApplicationsByTutorRepo(tId string) ([]*domain.JobApplication, error) {
 	var aplsByTutor []job_application_table
 	// res := jar.db.Where("applicant_id = ?", tId).Find(&aplsByTutor)
-	res := jar.db.Where("applicant_id = ?", tId).Order("created_at").Find(&aplsByTutor)
+	res := jar.db.Where("applicant_id = ?", tId).
+		Order("created_at DESC").
+		Find(&aplsByTutor)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -120,7 +125,9 @@ func (jar JobApplicationRepo) GetApplicationsByTutorRepo(tId string) ([]*domain.
 func (jar JobApplicationRepo) GetApplicationsByClientRepo(cltId string) ([]*domain.JobApplication, error) {
 	var aplsByClt []job_application_table
 	// res := jar.db.Where("applicant_id = ?", tId).Find(&aplsByTutor)
-	res := jar.db.Where("posted_by = ?", cltId).Order("created_at").Find(&aplsByClt)
+	res := jar.db.Where("posted_by = ?", cltId).
+		Order("created_at DESC").
+		Find(&aplsByClt)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -153,7 +160,7 @@ func (jar JobApplicationRepo) GetApplicationsByStatusRepo(jId string, status dom
 	res := jar.db.
 		Where("status = ?", status).
 		Where("job_id = ?", jId).
-		Order("updated_at").
+		Order("updated_at DESC").
 		Find(&aplsByStatus)
 
 	if res.Error != nil {
