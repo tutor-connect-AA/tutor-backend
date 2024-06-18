@@ -147,6 +147,7 @@ func main() {
 	mux.HandleFunc("/job-applications/tutors", jaHandler.ApplicationsByTutor)
 	mux.HandleFunc("/job-applications/clients", jaHandler.ApplicationsByClient)
 	mux.HandleFunc("/job-applications/status", jaHandler.GetApplicationByStatus)
+	mux.Handle("/job-applications/applied", protected.ThenFunc(jaHandler.HasApplied))
 
 	mux.HandleFunc("/hiring/hire", hireH.Hire)
 	mux.HandleFunc("/hiring/verify-hire", hireH.VerifyHire)
@@ -162,6 +163,7 @@ func main() {
 	mux.Handle("/job-request/update", protected.ThenFunc(jrHandler.ChangeJobRequestStatus))
 	mux.Handle("/job-request/hire", protected.ThenFunc(jrHandler.HireFromRequest))
 	mux.HandleFunc("/job-request/verify-hire", jrHandler.VerifyHireFromRequest)
+	mux.Handle("/job-request/requested", protected.ThenFunc(jrHandler.HasRequested))
 	// mux.HandleFunc("/jobRequest/multiple",jrHandler.)
 
 	mux.HandleFunc("/tutor-notification/single", tNfHandler.GetTutorNotification)
