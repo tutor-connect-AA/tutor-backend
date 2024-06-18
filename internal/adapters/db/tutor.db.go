@@ -30,6 +30,7 @@ type tutor_table struct {
 	Gender              domain.Gender
 	Photo               string `gorm:"not null"`
 	Rating              float32
+	RateCount           int
 	Bio                 string
 	Username            string `gorm:"unique"`
 	Password            string
@@ -65,7 +66,8 @@ func (ur *User) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {
 		Phone_Number:        tutor.PhoneNumber,
 		Gender:              tutor.Gender,
 		Photo:               tutor.Photo,
-		Rating:              tutor.Rating,
+		Rating:              3,
+		RateCount:           1,
 		Bio:                 tutor.Bio,
 		Username:            tutor.Username,
 		Password:            hashedPass,
@@ -78,9 +80,8 @@ func (ur *User) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {
 		FieldOfStudy:        tutor.FieldOfStudy,
 		EducationCredential: tutor.EducationCredential,
 		CurrentlyEnrolled:   tutor.CurrentlyEnrolled,
-		// ProofOfCurrentEnrollment: tutor.ProofOfCurrentEnrollment,
-		GraduationDate:    tutor.GraduationDate,
-		PreferredSubjects: tutor.PreferredSubjects,
+		GraduationDate:      tutor.GraduationDate,
+		PreferredSubjects:   tutor.PreferredSubjects,
 	}
 
 	newAuth := domain.Auth{
@@ -117,6 +118,7 @@ func (ur *User) GetTutorByIdRepo(id string) (*domain.Tutor, error) {
 		Gender:              tutor.Gender,
 		Photo:               tutor.Photo,
 		Rating:              tutor.Rating,
+		RateCount:           tutor.RateCount,
 		Bio:                 tutor.Bio,
 		Username:            tutor.Username,
 		Password:            tutor.Password,
@@ -156,6 +158,7 @@ func (ur *User) GetTutorByUsername(username string) (*domain.Tutor, error) {
 		Gender:              tutor.Gender,
 		Photo:               tutor.Photo,
 		Rating:              tutor.Rating,
+		RateCount:           tutor.RateCount,
 		Bio:                 tutor.Bio,
 		Username:            tutor.Username,
 		Password:            tutor.Password,
@@ -197,6 +200,7 @@ func (ur *User) SearchTutorByNameRepo(name string) ([]*domain.Tutor, error) {
 			Gender:              tutor.Gender,
 			Photo:               tutor.Photo,
 			Rating:              tutor.Rating,
+			RateCount:           tutor.RateCount,
 			Bio:                 tutor.Bio,
 			Username:            tutor.Username,
 			Password:            tutor.Password,
@@ -244,6 +248,7 @@ func (jr User) GetTutorsRepo(offset, limit int) ([]*domain.Tutor, error) {
 			Gender:              tutor.Gender,
 			Photo:               tutor.Photo,
 			Rating:              tutor.Rating,
+			RateCount:           tutor.RateCount,
 			Bio:                 tutor.Bio,
 			Username:            tutor.Username,
 			Password:            tutor.Password,
@@ -325,6 +330,7 @@ func (jr User) FilterTutorRepo(gender domain.Gender, rating, hourlyMin, hourlyMa
 			Gender:              tutor.Gender,
 			Photo:               tutor.Photo,
 			Rating:              tutor.Rating,
+			RateCount:           tutor.RateCount,
 			Bio:                 tutor.Bio,
 			Username:            tutor.Username,
 			Password:            tutor.Password,
@@ -345,16 +351,132 @@ func (jr User) FilterTutorRepo(gender domain.Gender, rating, hourlyMin, hourlyMa
 	return tutors, nil
 }
 
-func nullifyEmptyString(s string) interface{} {
-	if s == "" {
-		return ""
+// func (jr User) UpdateTutorRepo(updatedTutor domain.Tutor, id string) (*domain.Tutor, error) {
+
+// 	uuidId, err := uuid.Parse(updatedTutor.Id)
+// 	fmt.Print("Id of tutor is at tutor repo is : ", id)
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	updtTutor := &tutor_table{
+// 		First_Name:          updatedTutor.FirstName,
+// 		Fathers_Name:        updatedTutor.FathersName,
+// 		Email:               updatedTutor.Email,
+// 		Phone_Number:        updatedTutor.PhoneNumber,
+// 		Gender:              updatedTutor.Gender,
+// 		Photo:               updatedTutor.Photo,
+// 		Rating:              updatedTutor.Rating,
+// 		RateCount:           updatedTutor.RateCount,
+// 		Bio:                 updatedTutor.Bio,
+// 		Username:            updatedTutor.Username,
+// 		Password:            updatedTutor.Password,
+// 		Role:                updatedTutor.Role,
+// 		CV:                  updatedTutor.CV,
+// 		HourlyRate:          updatedTutor.HourlyRate,
+// 		Region:              updatedTutor.Region,
+// 		City:                updatedTutor.City,
+// 		Education:           updatedTutor.Education,
+// 		FieldOfStudy:        updatedTutor.FieldOfStudy,
+// 		EducationCredential: updatedTutor.EducationCredential,
+// 		CurrentlyEnrolled:   updatedTutor.CurrentlyEnrolled,
+// 		GraduationDate:      updatedTutor.GraduationDate,
+// 	}
+
+// 	res := jr.db.Model(&tutor_table{}).Where("id=?", uuidId).Updates(updtTutor)
+
+// 	if res.Error != nil {
+
+// 		fmt.Println("problem at tutor repo is : ", res.Error)
+// 		return nil, res.Error
+// 	}
+
+//		return &domain.Tutor{
+//			Id:                  updtTutor.Id.String(),
+//			FirstName:           updtTutor.First_Name,
+//			FathersName:         updtTutor.Fathers_Name,
+//			Email:               updtTutor.Email,
+//			PhoneNumber:         updtTutor.Phone_Number,
+//			Gender:              updtTutor.Gender,
+//			Photo:               updtTutor.Photo,
+//			Rating:              updtTutor.Rating,
+//			RateCount:           updtTutor.RateCount,
+//			Bio:                 updtTutor.Bio,
+//			Username:            updtTutor.Username,
+//			Password:            updtTutor.Password,
+//			Role:                updtTutor.Role,
+//			CV:                  updtTutor.CV,
+//			HourlyRate:          updtTutor.HourlyRate,
+//			Region:              updtTutor.Region,
+//			City:                updtTutor.City,
+//			Education:           updtTutor.Education,
+//			FieldOfStudy:        updtTutor.FieldOfStudy,
+//			EducationCredential: updtTutor.EducationCredential,
+//			CurrentlyEnrolled:   updtTutor.CurrentlyEnrolled,
+//			GraduationDate:      updtTutor.GraduationDate,
+//		}, nil
+//	}
+func (jr User) UpdateTutorRepo(updatedTutor domain.Tutor, id string) (*domain.Tutor, error) {
+	// Parse the UUID
+	uuidId, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
 	}
-	return s
+	fmt.Println("Id of tutor at tutor repo is:", id)
+
+	// Create an instance of tutor_table with updated values
+	updtTutor := &tutor_table{
+		First_Name:          updatedTutor.FirstName,
+		Fathers_Name:        updatedTutor.FathersName,
+		Email:               updatedTutor.Email,
+		Phone_Number:        updatedTutor.PhoneNumber,
+		Gender:              updatedTutor.Gender,
+		Photo:               updatedTutor.Photo,
+		Rating:              updatedTutor.Rating,
+		RateCount:           updatedTutor.RateCount,
+		Bio:                 updatedTutor.Bio,
+		Username:            updatedTutor.Username,
+		Password:            updatedTutor.Password,
+		Role:                updatedTutor.Role,
+		CV:                  updatedTutor.CV,
+		HourlyRate:          updatedTutor.HourlyRate,
+		Region:              updatedTutor.Region,
+		City:                updatedTutor.City,
+		Education:           updatedTutor.Education,
+		FieldOfStudy:        updatedTutor.FieldOfStudy,
+		EducationCredential: updatedTutor.EducationCredential,
+		CurrentlyEnrolled:   updatedTutor.CurrentlyEnrolled,
+		GraduationDate:      updatedTutor.GraduationDate,
+	}
+
+	// Update the tutor record in the database
+	res := jr.db.Model(&tutor_table{}).Where("id = ?", uuidId).Updates(updtTutor)
+	fmt.Println("updated tutor is : ", updtTutor)
+	if res.Error != nil {
+		fmt.Println("Problem at tutor repo:", res.Error)
+		return nil, res.Error
+	}
+
+	theTutor, err := jr.GetTutorByIdRepo(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return theTutor, nil
 }
 
-func nullifyZeroValue(i int) interface{} {
-	if i == 0 {
-		return 0
+func (jr User) ApproveRatingRepo(clientId, tutorId string) (bool, error) {
+	var count int64
+
+	err := jr.db.Model(&job_application_table{}).
+		Joins("JOIN job_tables ON job_application_tables.job_id = job_tables.id").
+		Where("job_application_tables.applicant_id = ? AND job_tables.posted_by = ? AND job_application_tables.status = ?", tutorId, clientId, domain.HIRED).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
 	}
-	return i
+
+	return count > 0, nil
 }

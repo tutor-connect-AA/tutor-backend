@@ -138,6 +138,7 @@ func main() {
 	mux.HandleFunc("/tutors/single", tutHandler.GetTutorById)
 	mux.HandleFunc("/tutors", tutHandler.GetTutors)
 	mux.HandleFunc("/tutors/filter", tutHandler.FilterTutors)
+	mux.Handle("/tutors/rate", protected.ThenFunc(tutHandler.RateTutor))
 	// mux.HandleFunc("/tutor/login", tutHandler.LoginTutor)
 
 	mux.HandleFunc("/job-applications/create", jaHandler.Apply)

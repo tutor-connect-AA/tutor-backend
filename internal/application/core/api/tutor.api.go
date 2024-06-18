@@ -70,6 +70,22 @@ func (ts TutorService) FilterTutor(gender domain.Gender, rating, hourlyMin, hour
 	}
 	return tutors, nil
 }
+func (ts TutorService) UpdateTutor(updatedTutor domain.Tutor, id string) (*domain.Tutor, error) {
+	tutor, err := ts.tutorRepo.UpdateTutorRepo(updatedTutor, id)
+
+	fmt.Print("Id of tutor is at tutor service is : ", id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tutor, nil
+}
+
+func (ts TutorService) ApproveRating(clientId, tutorId string) (bool, error) {
+	res, err := ts.tutorRepo.ApproveRatingRepo(clientId, tutorId)
+	return res, err
+}
 
 // func (ts *TutorService) LoginTutor(username, password string) (string, error) {
 // 	ttr, err := ts.tutorRepo.GetTutorByUsername(username)

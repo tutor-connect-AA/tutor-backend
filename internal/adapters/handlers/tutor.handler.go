@@ -100,7 +100,8 @@ func (th *TutorHandler) RegisterTutor(w http.ResponseWriter, r *http.Request) {
 		PhoneNumber:         r.PostForm.Get("phoneNumber"),
 		Gender:              gender,
 		Photo:               photoURL,
-		Rating:              5,
+		Rating:              3,
+		RateCount:           1,
 		Bio:                 r.PostForm.Get("bio"),
 		Username:            r.PostForm.Get("username"),
 		Password:            r.PostForm.Get("password"),
@@ -307,6 +308,91 @@ func (th *TutorHandler) FilterTutors(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Could not encode to json %v", err)
 		http.Error(w, "JSON encoding failed : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+func (th *TutorHandler) RateTutor(w http.ResponseWriter, r *http.Request) {
+
+	r.ParseMultipartForm(10 << 20)
+
+	// ntfId := r.URL.Query().Get("ntfId")
+	tutorId := r.URL.Query().Get("tutId")
+
+	payload, err := utils.GetPayload(r)
+	if err != nil {
+		http.Error(w, "Coult not get payload : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if payload["role"] != string(domain.ClientRole) {
+		http.Error(w, "Only clients can rate tutors ", http.StatusForbidden)
+		return
+	}
+
+	clientId := payload["id"]
+
+	approved, err := th.ts.ApproveRating(clientId, tutorId)
+	if err != nil {
+		http.Error(w, "Could not check if client is allowed to rate : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if approved == false {
+		http.Error(w, "Client has not worked with tutor to rate ", http.StatusForbidden)
+		return
+	}
+	fmt.Println("tutor id at from url is ", tutorId)
+
+	rating := r.PostForm.Get("rating")
+
+	newRating, err := strconv.Atoi(rating)
+	if err != nil {
+		http.Error(w, "Could not convert hiring to integer : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tutor, err := th.ts.GetTutorById(tutorId)
+
+	if err != nil {
+		http.Error(w, "Could not get tutor by id : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if newRating < 1 || newRating > 5 {
+		http.Error(w, "Invalid rating value", http.StatusBadRequest)
+		return
+	}
+
+	var existingRatingCount float32
+	if tutor.RateCount > 0 {
+		existingRatingCount = float32(tutor.RateCount)
+	} else {
+		existingRatingCount = 1.0 // Handle no previous ratings
+	}
+
+	finalRating := (float32(tutor.Rating)*existingRatingCount + float32(newRating)) / (existingRatingCount + 1)
+
+	updatedTutor := domain.Tutor{
+		RateCount: int(existingRatingCount) + 1,
+		Rating:    finalRating,
+	}
+
+	finalTutor, err := th.ts.UpdateTutor(updatedTutor, tutorId)
+
+	if err != nil {
+		http.Error(w, "Could not update rating of tutor : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res := Response{
+		Success: true,
+		Data:    finalTutor,
+	}
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+
+	if err != nil {
+		http.Error(w, "Could not marshal to json", http.StatusInternalServerError)
 		return
 	}
 
