@@ -9,4 +9,6 @@ type TutorDBPort interface {
 	SearchTutorByNameRepo(name string) ([]*domain.Tutor, error)
 	GetTutorsRepo(offset, limit int) ([]*domain.Tutor, error)
 	FilterTutorRepo(gender domain.Gender, rating, hourlyMin, hourlyMax int, city string, education domain.Education, fieldOfStudy string) ([]*domain.Tutor, error)
+	UpdateTutorRepo(updatedTutor domain.Tutor, id string) (*domain.Tutor, error)
+	ApproveRatingRepo(clientId, tutorId string) (bool, error)
 }

@@ -13,6 +13,7 @@ type Tutor struct {
 	Gender              Gender
 	Photo               string
 	Rating              float32
+	RateCount           int
 	Bio                 string
 	Username            string
 	Password            string

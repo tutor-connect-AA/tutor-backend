@@ -9,5 +9,7 @@ type TutorAPIPort interface {
 	SearchTutorByName(name string) ([]*domain.Tutor, error)
 	GetTutors(offset, limit int) ([]*domain.Tutor, error)
 	FilterTutor(gender domain.Gender, rating, hourlyMin, hourlyMax int, city string, education domain.Education, fieldOfStudy string) ([]*domain.Tutor, error)
+	UpdateTutor(updatedTutor domain.Tutor, id string) (*domain.Tutor, error)
+	ApproveRating(clientId, tutorId string) (bool, error)
 	// LoginTutor(username, password string) (string, error)
 }
