@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -180,11 +181,11 @@ func (jobH JobHandler) GetJobById(w http.ResponseWriter, r *http.Request) {
 // offset == 0 and limit
 func (jobH JobHandler) GetJobs(w http.ResponseWriter, r *http.Request) {
 
-	const pageSize = 2
+	const pageSize = 4
 
 	p := r.URL.Query().Get("page")
 	if p == "" {
-		p = "0"
+		p = "1"
 	}
 
 	pageNumber, err := strconv.Atoi(p)
@@ -209,10 +210,20 @@ func (jobH JobHandler) GetJobs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := Response{
-		Success: true,
-		Data:    jbList,
+	count, err := jobH.jobSer.GetJobCount()
+	if err != nil {
+		http.Error(w, "Could not get count of jobs by clients : "+err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	numberOfPages := math.Ceil(float64(float32(*count) / float32(pageSize)))
+
+	res := map[string]interface{}{
+		"Success":       true,
+		"Data":          jbList,
+		"numberOfPages": numberOfPages,
+	}
+
 	err = utils.WriteJSON(w, http.StatusOK, res, nil)
 	if err != nil {
 		fmt.Printf("Could not get a list of jobs %v", err)
@@ -265,5 +276,57 @@ func (jobH JobHandler) ComposeInterview(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Error marshalling to json  : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
 
+func (jobH JobHandler) GetJobByClient(w http.ResponseWriter, r *http.Request) {
+	const pageSize = 4
+
+	clientId := r.URL.Query().Get("cltId")
+	page := r.URL.Query().Get("page")
+
+	if page == "" {
+		page = "1"
+	}
+
+	if clientId == "" {
+		http.Error(w, "Client id can not be empty", http.StatusBadRequest)
+		return
+	}
+
+	pageNumber, err := strconv.Atoi(page)
+
+	if err != nil {
+		http.Error(w, "Error converting to integer", http.StatusInternalServerError)
+		return
+	}
+
+	offset := (pageNumber - 1) * pageSize
+
+	jobs, err := jobH.jobSer.GetJobByClient(clientId, offset, pageSize)
+
+	if err != nil {
+		http.Error(w, "Could not get jobs by client : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	count, err := jobH.jobSer.GetJobCountByClient(clientId)
+	if err != nil {
+		http.Error(w, "Could not get count of jobs by clients : "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	numberOfPages := math.Ceil(float64(float32(*count) / float32(pageSize)))
+
+	res := map[string]interface{}{
+		"Success":       true,
+		"Data":          jobs,
+		"numberOfPages": numberOfPages,
+	}
+
+	err = utils.WriteJSON(w, http.StatusOK, res, nil)
+
+	if err != nil {
+		http.Error(w, "Could not serialize to json", http.StatusInternalServerError)
+		return
+	}
 }

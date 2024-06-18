@@ -47,6 +47,31 @@ func (ja JobAPI) UpdateJob(jobId string, updatedJob domain.Job) (*domain.Job, er
 	return job, nil
 }
 
+func (ja JobAPI) GetJobByClient(clientId string, offset, limit int) ([]*domain.Job, error) {
+	jobs, err := ja.jr.GetJobByClientRepo(clientId, offset, limit)
+	if err != nil {
+		return nil, err
+	}
+	return jobs, nil
+}
+
+func (ja JobAPI) GetJobCount() (*int64, error) {
+	count, err := ja.jr.GetJobCountRepo()
+	if err != nil {
+		return nil, err
+	}
+	return count, nil
+
+}
+
+func (ja JobAPI) GetJobCountByClient(clientId string) (*int64, error) {
+	count, err := ja.jr.GetJobCountByClientRepo(clientId)
+	if err != nil {
+		return nil, err
+	}
+	return count, nil
+}
+
 // func (ja JobAPI) UpdateJobPost(updatedFieldsObj domain.Job) error {
 // 	err := ja.jobDB.UpdateJobRepo(updatedFieldsObj)
 // 	return err

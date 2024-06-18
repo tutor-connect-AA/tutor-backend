@@ -338,7 +338,7 @@ func (th *TutorHandler) RateTutor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if approved == false {
+	if !approved {
 		http.Error(w, "Client has not worked with tutor to rate ", http.StatusForbidden)
 		return
 	}

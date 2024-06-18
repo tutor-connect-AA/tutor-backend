@@ -99,7 +99,7 @@ func (jr JobRepo) GetJobsRepo(offset, limit int) ([]*domain.Job, error) {
 
 	var jobList []*domain.Job
 
-	if err := jr.db.Order("created_at").Offset(offset).Limit(limit).Find(&jbs).Error; err != nil {
+	if err := jr.db.Order("created_at desc").Offset(offset).Limit(limit).Find(&jbs).Error; err != nil {
 		return nil, err
 	}
 
@@ -141,4 +141,59 @@ func (jr JobRepo) UpdateJobRepo(jobId string, updatedJob domain.Job) (*domain.Jo
 	jr.db.First(&updatedRecord, jobId)
 
 	return &updatedRecord, nil
+}
+
+func (jr JobRepo) GetJobByClientRepo(clientId string, offset, limit int) ([]*domain.Job, error) {
+	var jbs []*job_table
+
+	var jobList []*domain.Job
+
+	if err := jr.db.Order("created_at desc").
+		Where("posted_by = ?", clientId).
+		Offset(offset).
+		Limit(limit).
+		Find(&jbs).Error; err != nil {
+		return nil, err
+	}
+
+	for _, job := range jbs {
+		oneJob := &domain.Job{
+			Id:                    job.Id.String(),
+			Title:                 job.Title,
+			Description:           job.Description,
+			Posted_By:             job.Posted_By,
+			Deadline:              job.Deadline,
+			Region:                job.Region,
+			City:                  job.City,
+			Quantity:              job.Quantity,
+			Grade_Of_Students:     job.Grade_Of_Students,
+			Minimum_Education:     job.Minimum_Education,
+			Preferred_Gender:      job.Preferred_Gender,
+			Contact_Hour_Per_Week: job.Contact_Hour_Per_Week,
+			Status:                job.Status,
+			Hourly_Rate_Min:       job.Hourly_Rate_Min,
+			Hourly_Rate_Max:       job.Hourly_Rate_Max,
+			Interview_Questions:   job.Interview_Questions,
+		}
+		jobList = append(jobList, oneJob)
+	}
+	return jobList, nil
+}
+
+func (jr JobRepo) GetJobCountRepo() (*int64, error) {
+	var count int64
+	if err := jr.db.Model(&job_table{}).Count(&count).Error; err != nil {
+		return nil, err
+	}
+	return &count, nil
+}
+func (jr JobRepo) GetJobCountByClientRepo(clientId string) (*int64, error) {
+	var count int64
+	if err := jr.db.Model(&job_table{}).
+		Where("posted_by = ?", clientId).
+		Count(&count).Error; err != nil {
+		return nil, err
+	}
+	return &count, nil
+
 }
