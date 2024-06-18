@@ -229,7 +229,7 @@ func (jr User) GetTutorsRepo(offset, limit int) ([]*domain.Tutor, error) {
 
 	var tutList []*domain.Tutor
 
-	if err := jr.db.Order("created_at").Offset(offset).Limit(limit).Find(&tuts).Error; err != nil {
+	if err := jr.db.Order("created_at desc").Offset(offset).Limit(limit).Find(&tuts).Error; err != nil {
 		return nil, err
 	}
 

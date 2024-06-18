@@ -66,7 +66,7 @@ func (jrr JobRequestRepo) JobRequestByIdRepo(id string) (*domain.JobRequest, err
 
 func (jrr JobRequestRepo) JobRequestsRepo() ([]*domain.JobRequest, error) {
 	var jrs []job_request_table
-	if res := jrr.db.Find(&jrs); res.Error != nil {
+	if res := jrr.db.Order("created_at desc").Find(&jrs); res.Error != nil {
 		return nil, res.Error
 	}
 
