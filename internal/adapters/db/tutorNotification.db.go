@@ -47,7 +47,7 @@ func (tNotf TutorNotificationRepo) UpdateTutorNotificationStatus(id string) erro
 }
 func (tNotf TutorNotificationRepo) GetTutorNotificationById(id string) (*domain.Notification, error) {
 	var tNtf tutor_notification_table
-	if res := tNotf.db.First(&tNotf).Where("id=?", id); res.Error != nil {
+	if res := tNotf.db.Where("id = ?", id).First(&tNtf); res.Error != nil {
 		return nil, res.Error
 	}
 	return &domain.Notification{
