@@ -9,5 +9,8 @@ type JobAPIPort interface {
 	GetJob(id string) (*domain.Job, error)
 	GetListOfJobs(offset, limit int) ([]*domain.Job, error)
 	UpdateJob(jobId string, updatedJob domain.Job) (*domain.Job, error)
+	GetJobByClient(clientId string, offset, limit int) ([]*domain.Job, error)
+	GetJobCount() (*int64, error)
+	GetJobCountByClient(clientId string) (*int64, error)
 	// UpdateJobPost(updatedFieldsObj domain.Job) error
 }
