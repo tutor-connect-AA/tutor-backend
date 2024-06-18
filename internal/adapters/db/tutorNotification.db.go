@@ -64,7 +64,7 @@ func (tNotf TutorNotificationRepo) GetTutorNotifications(ownerId string) ([]*dom
 
 	var tNtfs []tutor_notification_table
 
-	res := tNotf.db.Order("created_at desc").
+	res := tNotf.db.Order("created_at DESC").
 		Where("owner_id = ?", ownerId).
 		Find(&tNtfs)
 	if res.Error != nil {
@@ -90,7 +90,7 @@ func (tNotf TutorNotificationRepo) GetUnopenedTutorNotifications(ownerId string)
 
 	var tNtfs []tutor_notification_table
 
-	if err := tNotf.db.Order("created_at desc").Where("opened = ?", false).
+	if err := tNotf.db.Order("created_at DESC").Where("opened = ?", false).
 		Where("owner_id = ?", ownerId).
 		Find(&tNtfs).Error; err != nil {
 		return nil, err
