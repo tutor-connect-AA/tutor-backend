@@ -166,12 +166,12 @@ func main() {
 	mux.Handle("/job-request/requested", protected.ThenFunc(jrHandler.HasRequested))
 	// mux.HandleFunc("/jobRequest/multiple",jrHandler.)
 
-	mux.HandleFunc("/tutor-notification/single", tNfHandler.GetTutorNotification)
+	mux.Handle("/tutor-notification/single", protected.ThenFunc(tNfHandler.GetTutorNotification))
 	mux.Handle("/tutor-notifications", protected.ThenFunc(tNfHandler.GetTutorNotifications))
 	mux.Handle("/tutor-notifications/unopened", protected.ThenFunc(tNfHandler.UnopenedTutorNtfs))
 	mux.Handle("/tutor-notifications/count", protected.ThenFunc(tNfHandler.CountUnopenedTutorNtfs))
 
-	mux.HandleFunc("/client-notification/single", cNfHandler.GetClientNotification)
+	mux.Handle("/client-notification/single", protected.ThenFunc(cNfHandler.GetClientNotification))
 	mux.Handle("/client-notifications", protected.ThenFunc(cNfHandler.GetClientNotifications))
 	mux.Handle("/client-notifications/unopened", protected.ThenFunc(cNfHandler.UnopenedClientNtfs))
 	mux.Handle("/client-notifications/count", protected.ThenFunc(cNfHandler.CountUnopenedClientNtfs))
