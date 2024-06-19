@@ -203,8 +203,8 @@ func (jrH JobRequestHandler) HireFromRequest(w http.ResponseWriter, r *http.Requ
 	tx_ref := utils.RandomString(20)
 
 	// change url
-	return_url_actual := fmt.Sprintf(`https://tutor-backend-schs.onrender.com/jobRequest/verifyHire?txRef=%s&reqId=%s`, url.QueryEscape(tx_ref), url.QueryEscape(req_id)) //to be used later when deployed(b.v of verification error in url from Chapa )
-
+	// return_url_actual := fmt.Sprintf(`https://tutor-backend-schs.onrender.com/jobRequest/verifyHire?txRef=%s&reqId=%s`, url.QueryEscape(tx_ref), url.QueryEscape(req_id)) //to be used later when deployed(b.v of verification error in url from Chapa )
+	return_url_actual := "http://localhost:3000/client-side/dashboard"
 	fmt.Println("Actual return url is :", return_url_actual)
 
 	checkoutURL, err := utils.DoPayment("mahider3991@gmail.com", tx_ref, return_url_actual, 100)
