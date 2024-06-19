@@ -114,6 +114,11 @@ func main() {
 	jrSer := api.NewJobRequestAPI(jrRepo)
 	jrHandler := handlers.NewJobRequestHandler(jrSer, clientSer, tutSer, tNtfSer, cNtfSer)
 
+	//comment Application configuration
+	cmtRepo := db.NewCommentRepo(dbConnection)
+	cmtSer := api.NewCommentService(cmtRepo)
+	cmtHandler := handlers.NewCommentHandler(cmtSer)
+
 	mux := http.NewServeMux()
 
 	// handler := enableCors(mux)
@@ -175,6 +180,10 @@ func main() {
 	mux.Handle("/client-notifications", protected.ThenFunc(cNfHandler.GetClientNotifications))
 	mux.Handle("/client-notifications/unopened", protected.ThenFunc(cNfHandler.UnopenedClientNtfs))
 	mux.Handle("/client-notifications/count", protected.ThenFunc(cNfHandler.CountUnopenedClientNtfs))
+
+	mux.Handle("/comments/create", protected.ThenFunc(cmtHandler.CreateComment))
+	mux.HandleFunc("/comments/single", cmtHandler.GetCommentById)
+	mux.Handle("/comments/tutors", protected.ThenFunc(cmtHandler.GetComments))
 
 	log.Println("Listening on port:", port)
 	http.ListenAndServe(":"+port, enableCors(mux))

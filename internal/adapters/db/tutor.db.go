@@ -51,6 +51,7 @@ type tutor_table struct {
 	Applications  []job_application_table    `gorm:"foreignKey:applicant_id;references:Id"`
 	Job_requests  []job_request_table        `gorm:"foreignKey:TutorId;references:Id"`
 	Notifications []tutor_notification_table `gorm:"foreignKey:OwnerId;references:Id"`
+	Comments      []comment_table            `gorm:"foreignKey:Receiver;references:Id"`
 }
 
 func (ur *User) CreateTutorRepo(tutor *domain.Tutor) (*domain.Tutor, error) {

@@ -40,6 +40,7 @@ type client_table struct {
 	Jobs          []job_table                 `gorm:"foreignKey:Posted_By;references:Id"` //check for additional necessary info
 	Job_requests  []job_request_table         `gorm:"foreignKey:ClientId;references:Id"`
 	Notifications []client_notification_table `gorm:"foreignKey:OwnerId;references:Id"`
+	Comments      []comment_table             `gorm:"foreignKey:Giver;references:Id"`
 }
 
 func (ur User) GetClientByIdPort(id string) (*domain.Client, error) {
