@@ -216,7 +216,12 @@ func (jrH JobRequestHandler) HireFromRequest(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "Payment redirection failed : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, checkoutURL, http.StatusSeeOther)
+	err = utils.WriteJSON(w, http.StatusOK, checkoutURL, nil)
+	if err != nil {
+		http.Error(w, "conversion to json failed", http.StatusInternalServerError)
+		return
+	}
+	// http.Redirect(w, r, checkoutURL, http.StatusSeeOther)
 }
 
 func (jrH JobRequestHandler) VerifyHireFromRequest(w http.ResponseWriter, r *http.Request) {
@@ -313,8 +318,12 @@ func (jrH JobRequestHandler) VerifyHireFromRequest(w http.ResponseWriter, r *htt
 		http.Error(w, "Could not add notification for tutor :"+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	http.Redirect(w, r, tNtfLink, http.StatusSeeOther)
+	err = utils.WriteJSON(w, http.StatusOK, tNtfLink, nil)
+	if err != nil {
+		http.Error(w, "conversion to json failed", http.StatusInternalServerError)
+		return
+	}
+	// http.Redirect(w, r, tNtfLink, http.StatusSeeOther)
 }
 
 func (jrH JobRequestHandler) HasRequested(w http.ResponseWriter, r *http.Request) {
