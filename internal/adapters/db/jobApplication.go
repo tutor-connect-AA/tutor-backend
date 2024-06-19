@@ -1,8 +1,6 @@
 package db
 
 import (
-	"errors"
-
 	"github.com/google/uuid"
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"gorm.io/gorm"
@@ -36,13 +34,13 @@ func NewJobApplicationRepo(db *gorm.DB) *JobApplicationRepo {
 }
 
 func (jar JobApplicationRepo) CreateApplicationRepo(apl domain.JobApplication) (*domain.JobApplication, error) {
-	applied, err := jar.HasAppliedRepo(apl.JobId, apl.ApplicantId)
-	if err != nil {
-		return nil, err
-	}
-	if applied {
-		return nil, errors.New("a tutor can only apply once for a job")
-	}
+	// applied, err := jar.HasAppliedRepo(apl.JobId, apl.ApplicantId)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// if applied {
+	// 	return nil, errors.New("a tutor can only apply once for a job")
+	// }
 	var newApplication = &job_application_table{
 		JobId:       apl.JobId,
 		ApplicantId: apl.ApplicantId,
