@@ -48,7 +48,7 @@ func (cNotf *ClientNotificationRepo) UpdateClientNotificationStatus(id string) e
 
 func (cNotf ClientNotificationRepo) GetClientNotificationById(id string) (*domain.Notification, error) {
 	var cNtf client_notification_table
-	if res := cNotf.db.First(&cNtf).Where("id=?", id); res.Error != nil {
+	if res := cNotf.db.Where("id = ?", id).First(&cNtf); res.Error != nil {
 		return nil, res.Error
 	}
 	return &domain.Notification{
