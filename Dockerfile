@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Copy the .env file
-COPY .env .env
+# COPY .env .env
 
 # Build the Go app
 RUN go build -o bin ./cmd
