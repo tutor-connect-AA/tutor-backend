@@ -17,7 +17,7 @@ import (
 type ClientAPIPort interface {
 	RegisterClient(usr domain.Client) (*domain.Client, error)
 	GetClientById(id string) (*domain.Client, error)
-	GetListOfClients() ([]*domain.Client, error)
+	GetListOfClients(offset, pageSize int) ([]*domain.Client, int64, error)
 	UpdateClientProfile(updatedClt domain.Client) error //Takes in the updated client and returns the id of the client if success
 	GetClientByUsername(username string) (*domain.Client, error)
 	// LoginClient(username, password string) (string, error)
