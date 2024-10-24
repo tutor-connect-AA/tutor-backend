@@ -39,13 +39,13 @@ func (ca ClientAPI) RegisterClient(usr domain.Client) (*domain.Client, error) {
 	return client, nil
 }
 
-func (ca ClientAPI) GetListOfClients() ([]*domain.Client, error) {
-	clt, err := ca.cr.GetClientsPort()
+func (ca ClientAPI) GetListOfClients(offset, pageSize int) ([]*domain.Client, int64, error) {
+	clt, count, err := ca.cr.GetClientsPort(offset, pageSize)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return clt, nil
+	return clt, count, nil
 }
 
 func (ca ClientAPI) UpdateClientProfile(updatedClt domain.Client) error {
