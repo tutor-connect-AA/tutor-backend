@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/tutor-connect-AA/tutor-backend/internal/application/core/domain"
 	"github.com/tutor-connect-AA/tutor-backend/internal/ports/api_ports"
@@ -28,7 +29,7 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 
 	var newClient domain.Client
 
-	err := r.ParseMultipartForm(10 << 20) // 10 MB max size
+	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Could not parse form : "+err.Error(), http.StatusBadRequest)
 		return
@@ -44,7 +45,7 @@ func (adp ClientAdapter) Register(w http.ResponseWriter, r *http.Request) {
 		Role:        domain.Role("CLIENT"),
 		Rating:      3,
 	}
-	// fmt.Print(newClient)
+	fmt.Print("New Client at handler is : ", newClient)
 	clt, err := adp.ser.RegisterClient(newClient)
 
 	if err != nil {
@@ -94,23 +95,46 @@ func (adp ClientAdapter) GetClientById(w http.ResponseWriter, r *http.Request) {
 
 func (adp ClientAdapter) GetListOfClients(w http.ResponseWriter, r *http.Request) {
 
-	clts, err := adp.ser.GetListOfClients()
+	offsetStr := r.URL.Query().Get("offset")
+	pageSizeStr := r.URL.Query().Get("pageSize")
+
+	offset := 0
+	pageSize := 10
+
+	if offsetStr != "" {
+		parsedOffset, err := strconv.Atoi(offsetStr)
+		if err == nil {
+			offset = parsedOffset
+		}
+	}
+
+	if pageSizeStr != "" {
+		parsedPageSize, err := strconv.Atoi(pageSizeStr)
+		if err == nil {
+			pageSize = parsedPageSize
+		}
+	}
+
+	clts, count, err := adp.ser.GetListOfClients(offset, pageSize)
 
 	if err != nil {
 		fmt.Fprintf(w, "Could not get list of clients : %v", err)
 		return
 	}
 
+	data := make(map[string]interface{})
+
 	cltList := []domain.Client{}
 	for _, clt := range clts {
 		cltList = append(cltList, *clt)
 	}
-	err = utils.WriteJSON(w, http.StatusOK, cltList, nil)
+	data["items"] = cltList
+	data["total"] = count
+	err = utils.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		http.Error(w, "Could not send json : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// fmt.Fprintf(w, "Here are all the clients, %v", clts)
 
 }
 

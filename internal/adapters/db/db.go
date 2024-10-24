@@ -7,10 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// type Adapter struct {
-// 	db *gorm.DB
-// }
-
 func ConnectDB(dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 

@@ -8,36 +8,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// type ClientRepo struct {
-// 	db *gorm.DB
-// }
-
-// func NewClientRepo(db *gorm.DB) *ClientRepo {
-// 	return &ClientRepo{
-// 		db: db,
-// 	}
-// }
-
-// type Role string
-
-// const (
-// 	client Role = "CLIENT"
-// 	tutor  Role = "TUTOR"
-// 	admin  Role = "ADMIN"
-// )
-
 type client_table struct {
-	gorm.Model
-	Id            uuid.UUID                   `gorm:"type:uuid;default:uuid_generate_v4()"`
-	First_Name    string                      //`gorm :"not null"`
-	Fathers_Name  string                      //optional
-	Phone_Number  string                      //`gorm :"not null"`
-	Email         string                      `gorm:"unique; not null"`
-	Username      string                      `gorm:"unique; not null"`
-	Password      string                      //`gorm :"not null"`
-	Role          domain.Role                 `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"` // should role even exist?
+	Id            uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	First_Name    string
+	Fathers_Name  string
+	Phone_Number  string
+	Email         string `gorm:"unique; not null"`
+	Username      string `gorm:"unique; not null"`
+	Password      string
+	Role          domain.Role                 `gorm:"check:role IN ('CLIENT','TUTOR','ADMIN')"`
 	Rating        float32                     `gorm:"column:rating;check:rating >= 0 AND rating <= 5"`
-	Jobs          []job_table                 `gorm:"foreignKey:Posted_By;references:Id"` //check for additional necessary info
+	Jobs          []job_table                 `gorm:"foreignKey:Posted_By;references:Id"`
 	Job_requests  []job_request_table         `gorm:"foreignKey:ClientId;references:Id"`
 	Notifications []client_notification_table `gorm:"foreignKey:OwnerId;references:Id"`
 	Comments      []comment_table             `gorm:"foreignKey:Giver;references:Id"`
@@ -46,10 +27,8 @@ type client_table struct {
 func (ur User) GetClientByIdPort(id string) (*domain.Client, error) {
 	var clientEntity client_table
 	clt := ur.db.Where("id = ?", id).First(&clientEntity)
-	// clt := ur.db.First(&clientEntity, id)
 
 	client := &domain.Client{
-		// Id:          clientEntity.Id, how to convert the uuid to string?????
 		FirstName:   clientEntity.First_Name,
 		FathersName: clientEntity.Fathers_Name,
 		PhoneNumber: clientEntity.Phone_Number,
@@ -62,8 +41,9 @@ func (ur User) GetClientByIdPort(id string) (*domain.Client, error) {
 	return client, clt.Error
 }
 
-// func (ur ClientRepo) CreateClientPort(clt Client) (*domain.Client, error)
 func (ur *User) CreateClientPort(clt domain.Client) (*domain.Client, error) {
+
+	fmt.Print("The new client is at repo is :", clt)
 	newClient := &client_table{
 		First_Name:   clt.FirstName,
 		Fathers_Name: clt.FathersName,
@@ -75,43 +55,59 @@ func (ur *User) CreateClientPort(clt domain.Client) (*domain.Client, error) {
 		Rating:       clt.Rating,
 	}
 
-	cltRes := ur.db.Create(&newClient)
+	tx := ur.db.Begin()
 
-	fmt.Print("The client id in create client port is ", newClient.Id)
+	go func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
-	if cltRes.Error != nil {
-		return nil, cltRes.Error
+	if err := tx.Error; err != nil {
+		return nil, err
 	}
 
-	// clientID := fmt.Sprint(newClient.Id) //convert uuid to string
-
-	// fmt.Println("The client id in create client port is ", clientID)
+	cltRes := tx.Create(&newClient)
+	if cltRes.Error != nil {
+		tx.Rollback()
+		return nil, cltRes.Error
+	}
 
 	newAuth := domain.Auth{
 		Username: newClient.Username,
 		Password: newClient.Password,
-		// ClientID: clientID,
-		Role: newClient.Role,
+		Role:     newClient.Role,
 	}
+
 	_, err := ur.CreateAuthRepo(newAuth)
 	if err != nil {
+		tx.Rollback()
 		return nil, err
 	}
+
+	tx.Commit()
+
 	clt.Id = newClient.Id.String()
+
 	return &clt, nil
 
 }
 
-func (ur User) GetClientsPort() ([]*domain.Client, error) {
+func (ur *User) GetClientsPort(offset, pageSize int) ([]*domain.Client, int64, error) {
 	var clients []*client_table
 
 	res := ur.db.
 		Order("created_at DESC").
+		Limit(pageSize).
+		Offset(offset).
 		Find(&clients)
 
 	if res.Error != nil {
-		return nil, res.Error
+		return nil, 0, res.Error
 	}
+
+	var count int64
+	ur.db.Model(&client_table{}).Count(&count)
 
 	var clientsReturn []*domain.Client
 
@@ -130,7 +126,7 @@ func (ur User) GetClientsPort() ([]*domain.Client, error) {
 		clientsReturn = append(clientsReturn, cltDomain)
 	}
 
-	return clientsReturn, nil
+	return clientsReturn, count, nil
 }
 
 func (ur *User) UpdateClientPort(updatedFieldsObj domain.Client) error {
